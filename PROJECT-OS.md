@@ -154,15 +154,15 @@ Keeping LaunchCity's own domain model independent of Launch Library 2's response
 
 **Original objective still intact?** Yes
 
-**Current scope change, if any:** None — this experiment resolves one open uncertainty (source strategy) within the existing objective; it does not expand or deepen the product promise.
-**Why is it justified?**
-**Are we deepening the existing promise or expanding it?**
-**Are we changing working software? Why?**
-**Are repeated reviews still materially changing the outcome?**
+**Current scope change, if any:** The domain boundary was narrowed, not expanded — Payload dropped as a structured v0.1 entity (folded into Mission descriptive text), Vehicle narrowed to configuration/family level (booster-instance tracking deferred). No new product features were added.
+**Why is it justified?** Real Launch Library 2 evidence (6 live API calls, 10 varied cases) did not support a structured Payload entity or booster-instance tracking, and neither is required by the stated v0.1 objective.
+**Are we deepening the existing promise or expanding it?** Neither — the original promise (what/when/who/vehicle/where/payload/mission/status/outcome) remains fully intact via simpler means than originally hypothesised.
+**Are we changing working software? Why?** No working software exists yet; this is a pre-implementation domain-boundary freeze.
+**Are repeated reviews still materially changing the outcome?** No — this scope check surfaced no new blocking unknowns beyond the domain-validation pass. All remaining unknowns are better resolved by real software observing real data than by further domain research, which is the signal to stop analysing and move to architecture.
 
-**Current decision:** Continue
+**Current decision:** FREEZE DOMAIN DIRECTION
 
-**Reason:** Source strategy decided in principle (see Decision Required below); implementation not yet started.
+**Reason:** [2026-09-14] Scope & Stop check run against the domain-validation evidence. Frozen: a five-concept v0.1 domain boundary — Launch Event, Mission, Provider, Vehicle (configuration/family level only), Site/Pad (kept separate) — with Payload not modelled as a structured entity. Deliberately left unresolved: persistent database schema, identifier strategy, canonical store decision, reschedule/scrub history-recording mechanism, source aggregation, historical backfill strategy, and whether booster-instance tracking is ever added. Implementation must not assume: upstream `status` will ever contain delayed/scrubbed/launched values; a launch's upstream `id` is permanently stable across a scrub-and-retry cycle; a structured Payload list; individual booster/launcher identity; or that `net` is a precise timestamp without also checking `net_precision`. No further domain research is warranted before proceeding to architecture — see Decision Required in this check's output for the small number of concepts frozen.
 
 ---
 
@@ -199,3 +199,4 @@ Only capture something likely to improve a future decision.
 | 2026-09-14 | Project OS v0.1 Experiment 001 | Decide LaunchCity data/source strategy before any implementation | Yes | None | See sections 2 and 3 above; full investigation and recommendation delivered in conversation |
 | 2026-09-14 | Project OS v0.1 Experiment 001 — Decision Recorded | Record approved data strategy decision and provisional domain hypothesis; correct overstated claim about schema independence guaranteeing an integration-only provider swap | Yes | None | Approved: LL2 as sole source, API + local cache, provider treated as replaceable, no adoption of LL2 JSON as domain contract. Six domain concepts marked provisional, not an approved schema. Persistent schema, canonical store, identifier strategy, state model, aggregation and backfill remain undecided. |
 | 2026-09-14 | Project OS v0.1 Experiment 001 — Domain Validation | Validate the provisional six-entity domain hypothesis against 6 live Launch Library 2 API calls spanning 10 deliberately varied real launch cases (upcoming/historical, commercial/government, TBD, delayed, failed/partial-failure, rideshare, classified, non-US) | Yes | None | Payload dropped as a v0.1 structured entity (mission-level aggregate only, no manifest data available). Vehicle confirmed as 3 layers; only configuration/family needed for v0.1. Status model corrected: upstream exposes Go/TBC/TBD/Success/Failure/Partial Failure only — no Delayed/Scrubbed/Launched; LaunchCity must derive and record these itself. No structured reschedule history available upstream — must be captured by LaunchCity from day one. Full findings in conversation; §1/§2/§3 amended accordingly. |
+| 2026-09-14 | Project OS Scope & Stop Check | Challenge whether enough evidence exists to stop domain analysis and move to architecture, given remaining unknowns from the domain validation | Yes | None | Decision: FREEZE DOMAIN DIRECTION. Frozen five-concept v0.1 boundary (Launch Event, Mission, Provider, Vehicle at configuration level, Site/Pad); Payload not modelled as a structured entity. No blocking unknowns found — remaining unknowns (scrub/new-record id behaviour, Mission lifespan across reflights, manifest availability, paid-tier limits, bulk-dump availability) deliberately deferred to real software/real data rather than further research. §4 updated with full reasoning. |
