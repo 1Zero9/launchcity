@@ -3,6 +3,7 @@ import { LAUNCHES_CACHE_KEY } from "@/lib/refresh";
 import { buildLaunchSequence } from "@/lib/timeline";
 import type { NormalizedLaunch } from "@/lib/contract";
 import { HorizonTimeline } from "@/components/timeline/HorizonTimeline";
+import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function Home() {
   const sequence = buildLaunchSequence(snapshot?.data ?? []);
 
   return (
-    <main>
+    <main className={styles.page}>
       <HorizonTimeline
         sequence={sequence}
         lastSuccessfulRefresh={snapshot?.lastSuccessfulRefresh ?? null}

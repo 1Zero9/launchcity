@@ -3,19 +3,7 @@
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
-  padding: var(--lc-space-4) var(--lc-space-2) var(--lc-space-3);
-}
-
-/* Purely decorative horizon curve - aria-hidden, carries no information. */
-.arc {
-  position: absolute;
-  inset: 0 0 auto 0;
-  top: 45%;
-  width: 100%;
-  height: 8rem;
-  color: var(--lc-fg-faint);
-  opacity: 0.6;
-  pointer-events: none;
+  padding: var(--lc-space-3) var(--lc-space-2);
 }
 
 .sequence {
@@ -24,8 +12,39 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  align-items: flex-end;
+  align-items: flex-end; /* every item's bottom edge shares one line - the rail */
   gap: clamp(0.5rem, 2vw, 2rem);
+}
+
+/* The rail - a single restrained line every marker's bottom edge rests on.
+   Brightest under the dominant launch, fading toward the edges: the light
+   reads as originating from "next", not as a decoration laid over the top. */
+.sequence::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--lc-fg-faint) 20%,
+    var(--lc-accent) 50%,
+    var(--lc-fg-faint) 80%,
+    transparent
+  );
+  opacity: 0.7;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.pastItem,
+.futureItem,
+.dominantItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .pastItem,
@@ -33,10 +52,14 @@
   flex: 1 1 0;
   min-width: 0;
   text-align: center;
+  /* Restrained recession from "next": scale only, never colour/contrast. */
+  opacity: calc(1 - var(--distance, 1) * 0.08);
+  transform: scale(calc(1 - var(--distance, 1) * 0.045));
+  transform-origin: bottom center;
 }
 
-.pastItem {
-  opacity: 0.85;
+.itemContent {
+  min-width: 0;
 }
 
 .sequenceName {
@@ -53,11 +76,34 @@
   color: var(--lc-fg-muted);
 }
 
+/* Markers - the visual attachment point between a launch and the rail. */
+.marker {
+  display: block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--lc-fg-muted);
+  margin-top: 0.875rem;
+  flex-shrink: 0;
+}
+
+.dominantMarker {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--lc-accent);
+  margin-top: 1.25rem;
+  flex-shrink: 0;
+  box-shadow:
+    0 0 0.5rem 0.125rem var(--lc-accent-soft),
+    0 0 1.75rem 0.5rem var(--lc-accent-soft);
+}
+
 .dominantItem {
+  position: relative;
   flex: 2.5 1 0;
   min-width: 0;
-  display: flex;
-  justify-content: center;
   padding: 0 var(--lc-space-1);
 }
 
@@ -66,18 +112,24 @@
   max-width: 40rem;
   min-width: 0;
   text-align: center;
-  padding: var(--lc-space-3) var(--lc-space-2);
+  padding: var(--lc-space-2) var(--lc-space-2) 0;
 }
 
-/* Restrained glow behind the dominant launch - the one place the accent
-   colour is allowed to dominate visually, and it carries no text of its
-   own, so it can be removed without losing information. */
-.dominant::before {
+/* The glow originates near the marker (the horizon point itself), not the
+   middle of the text block - light rises from "next", rather than sitting
+   behind it. */
+.dominantItem::before {
   content: "";
   position: absolute;
-  inset: -3rem -2rem;
-  background: radial-gradient(ellipse at center, var(--lc-accent-soft), transparent 70%);
+  left: 50%;
+  bottom: -1rem;
+  width: 34rem;
+  max-width: 90vw;
+  height: 18rem;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center bottom, var(--lc-accent-soft), transparent 70%);
   z-index: -1;
+  pointer-events: none;
 }
 
 .dominantEyebrow {
@@ -140,45 +192,81 @@
   color: var(--lc-accent);
 }
 
-/* Mobile: reinterpret the horizon as a vertical sequence rather than
-   shrinking the horizontal layout until it becomes unreadable. */
+/* Mobile: the rail moves to one side of the content instead of through its
+   centre - PAST (top) -> NEXT -> FUTURE (bottom), read top to bottom. */
 @media (max-width: 640px) {
-  .arc {
-    display: none;
-  }
-
   .sequence {
     flex-direction: column;
-    align-items: center;
-    position: relative;
-    padding-left: 0;
+    align-items: stretch;
+    gap: var(--lc-space-3);
   }
 
-  .sequence::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
+  .sequence::after {
+    /* vertical rail - centred through the marker column (marker width
+       0.625rem, so its centre sits at half that from the left edge) */
+    left: 0.3125rem;
+    right: auto;
+    top: 0.4rem;
+    bottom: 0.4rem;
     width: 1px;
+    height: auto;
     background: linear-gradient(
       to bottom,
       transparent,
-      var(--lc-fg-faint) 20%,
+      var(--lc-fg-faint) 12%,
       var(--lc-accent) 50%,
-      var(--lc-fg-faint) 80%,
+      var(--lc-fg-faint) 88%,
       transparent
     );
-    z-index: -1;
   }
 
   .pastItem,
   .futureItem,
   .dominantItem {
-    max-width: 20rem;
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    max-width: none;
+    /* Hierarchy on mobile comes from the dominant launch's own type scale,
+       not from scaling/fading secondary items against a side rail. */
+    opacity: 1;
+    transform: none;
+    gap: 1rem;
+  }
+
+  .itemContent {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Equal marker size on mobile so both sit centred on the same rail
+     column - the dominant marker stays "strongest" via colour/glow and
+     the dramatically larger adjacent type, not extra size here. */
+  .marker,
+  .dominantMarker {
+    order: -1;
+    width: 0.625rem;
+    height: 0.625rem;
+    margin-top: 0.4rem;
+    flex: 0 0 auto;
+    box-shadow: none;
   }
 
   .dominant {
-    padding: var(--lc-space-2);
+    padding: 0;
+    text-align: left;
+  }
+
+  .dominantFacts {
+    justify-content: flex-start;
+  }
+
+  .dominantItem::before {
+    left: 0.3125rem;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14rem;
+    height: 14rem;
   }
 }

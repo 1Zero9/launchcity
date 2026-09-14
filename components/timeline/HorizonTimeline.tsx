@@ -11,6 +11,10 @@ import styles from "./HorizonTimeline.module.css";
  * One <ol> is the whole timeline; the dominant item is marked aria-current
  * rather than living in a separate list, so it reads as one sequence to
  * assistive technology as well as visually.
+ *
+ * Every item ends in a marker (span, aria-hidden) that sits on a shared
+ * rail line - the markers and the rail are the horizon; both are purely
+ * decorative attachments to the real information in the <ol> itself.
  */
 export function HorizonTimeline({
   sequence,
@@ -25,20 +29,20 @@ export function HorizonTimeline({
 
   return (
     <section className={styles.horizon} aria-label="Launch timeline">
-      {/* Purely decorative - the horizon curve/glow carries no information
-          of its own; removing it loses nothing the <ol> doesn't already say. */}
-      <svg className={styles.arc} viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        <path d="M 0 8 Q 50 0 100 8" fill="none" stroke="currentColor" strokeWidth="0.15" />
-      </svg>
-
       <ol className={styles.sequence}>
-        {before.map((launch) => (
-          <SequenceItem key={launch.sourceId} launch={launch} variant="past" />
+        {before.map((launch, index) => (
+          <SequenceItem
+            key={launch.sourceId}
+            launch={launch}
+            variant="past"
+            distance={before.length - index}
+          />
         ))}
 
         {dominant ? (
           <li className={styles.dominantItem} aria-current="true">
             <DominantLaunch launch={dominant} />
+            <span className={styles.dominantMarker} aria-hidden="true" />
           </li>
         ) : (
           <li className={styles.dominantItem} aria-current="true">
@@ -46,11 +50,12 @@ export function HorizonTimeline({
               <p className={styles.dominantEyebrow}>Next launch</p>
               <p className={styles.dominantName}>No upcoming launch information available</p>
             </div>
+            <span className={styles.dominantMarker} aria-hidden="true" />
           </li>
         )}
 
-        {after.map((launch) => (
-          <SequenceItem key={launch.sourceId} launch={launch} variant="future" />
+        {after.map((launch, index) => (
+          <SequenceItem key={launch.sourceId} launch={launch} variant="future" distance={index + 1} />
         ))}
       </ol>
 
