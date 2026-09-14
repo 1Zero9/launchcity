@@ -344,6 +344,16 @@ Only capture something likely to improve a future decision.
 **Candidate type:** Pattern
 **Future relevance:** When a UI phase's data need looks unmet, check whether the frozen experience's own language already anticipates the gap (conditional/optional phrasing) before concluding the contract must expand - many apparent gaps are already designed-for absences, not blocking omissions.
 
+### Learning record
+
+**Date:** 2026-09-14
+**What happened:** Ran a v0.1 Scope & Stop / release-readiness review across the whole project. Asked specifically about the absence of a LaunchCity icon/mark (only a text wordmark exists; the favicon is still the unmodified `create-next-app` default).
+**What we expected:** That a visual-identity gap this late, after a full visual-direction phase, might indicate something the process should have caught earlier.
+**What we learned:** It's genuinely later polish, not a v0.1 gap - the frozen product/experience/visual direction never required an icon, and nothing about the product's usability depends on one. But it surfaced a real, separate observation: Project OS's Risk & Failure and Scope & Stop checks never independently flagged this absence across 6+ freeze cycles that included an entire visual-direction phase - it took a direct question to notice. Separately, an observation about how this project's creator tends to work: an optional early identity seed - name/icon/mark/motif - may help establish project identity without constituting frozen visual direction. Recorded as evidence about a working pattern, not adopted as a LaunchCity requirement or a Project OS rule.
+**Reusable beyond this project?** Yes
+**Candidate type:** Pattern
+**Future relevance:** The Scope & Stop mechanism is good at catching drift from decisions already made, but is not naturally suited to noticing gaps nobody decided about yet - worth being aware of that blind spot rather than assuming the checks are exhaustive. Separately: an early, lightweight identity seed (not a frozen visual direction) may be worth offering proactively at project start in future work, as a option rather than a requirement.
+
 ---
 
 ## Project OS Experiment Log
