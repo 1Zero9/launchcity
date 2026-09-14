@@ -1,0 +1,25 @@
+name: Refresh launch data
+
+# Vercel's Hobby (free) plan only allows daily cron jobs, not the ~15 minute
+# cadence the approved v0.1 architecture calls for (PROJECT-OS.md). Rather
+# than pay for Pro just to get sub-daily cron, the scheduled trigger lives
+# here instead - GitHub Actions cron is free and calls the same protected
+# /api/refresh endpoint the platform's own cron would have called.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger refresh
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "x-refresh-secret: ${{ secrets.REFRESH_SECRET }}" \
+            "${{ secrets.LAUNCHCITY_URL }}/api/refresh")
+          echo "Refresh endpoint responded with $status"
+          if [ "$status" -ge 300 ]; then
+            exit 1
+          fi

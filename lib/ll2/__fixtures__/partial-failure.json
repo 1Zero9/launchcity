@@ -1,0 +1,266 @@
+{
+  "id": "1c322288-e79c-4975-a76a-c2e83908903e",
+  "url": "https://ll.thespacedevs.com/2.2.0/launch/1c322288-e79c-4975-a76a-c2e83908903e/",
+  "slug": "firefly-alpha-flta004-fly-the-lightning",
+  "r_spacex_api_id": null,
+  "name": "Firefly Alpha | FLTA004 (Fly the Lightning)",
+  "status": {
+    "id": 7,
+    "name": "Launch was a Partial Failure",
+    "abbrev": "Partial Failure"
+  },
+  "last_updated": "2025-03-06T02:22:34Z",
+  "updates": [
+    {
+      "id": 6100,
+      "comment": "Updated launch status following confirmation of stage 2 2nd burn failure.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-23T05:48:45Z"
+    },
+    {
+      "id": 6081,
+      "comment": "Liftoff.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-22T17:32:43Z"
+    },
+    {
+      "id": 6080,
+      "comment": "Updated T-0.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-22T16:45:01Z"
+    },
+    {
+      "id": 6079,
+      "comment": "Livestream has started",
+      "created_by": "LL2",
+      "created_on": "2023-12-22T16:28:32Z"
+    },
+    {
+      "id": 6076,
+      "comment": "Weather 40% GO.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-22T15:59:55Z"
+    },
+    {
+      "id": 6074,
+      "comment": "New T-0.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-22T14:29:09Z"
+    },
+    {
+      "id": 6059,
+      "comment": "Confirmed rescheduled for December 22.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-21T00:31:29Z"
+    },
+    {
+      "id": 6058,
+      "comment": "Tentatively planned for December 22.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-20T19:24:10Z"
+    },
+    {
+      "id": 6055,
+      "comment": "Scrubbed due to weather, next launch attempt TBD.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-20T15:43:38Z"
+    },
+    {
+      "id": 6054,
+      "comment": "Updating T-0",
+      "created_by": "Nosu",
+      "created_on": "2023-12-20T14:46:02Z"
+    },
+    {
+      "id": 6053,
+      "comment": "Weather 30% GO",
+      "created_by": "hitura-nobad",
+      "created_on": "2023-12-20T13:53:57Z"
+    },
+    {
+      "id": 6024,
+      "comment": "Setting GO",
+      "created_by": "hitura-nobad",
+      "created_on": "2023-12-18T21:21:23Z"
+    },
+    {
+      "id": 6013,
+      "comment": "NET December 20 per marine navigation warnings.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2023-12-17T03:57:44Z"
+    },
+    {
+      "id": 5785,
+      "comment": "Added launch",
+      "created_by": "hitura-nobad",
+      "created_on": "2023-11-27T18:44:43Z"
+    }
+  ],
+  "net": "2023-12-22T17:32:30Z",
+  "net_precision": {
+    "id": 0,
+    "name": "Second",
+    "abbrev": "SEC"
+  },
+  "window_end": "2023-12-22T17:48:00Z",
+  "window_start": "2023-12-22T17:18:00Z",
+  "probability": 60,
+  "weather_concerns": null,
+  "holdreason": "",
+  "failreason": "Stage 2 2nd burn suffered problems and did not deliver the payload to its precise target orbit. Communication to the spacecraft has been established and mission operations are now underway.",
+  "hashtag": null,
+  "launch_service_provider": {
+    "id": 265,
+    "url": "https://ll.thespacedevs.com/2.2.0/agencies/265/",
+    "name": "Firefly Aerospace",
+    "featured": true,
+    "type": "Commercial",
+    "country_code": "USA",
+    "abbrev": "FA",
+    "administrator": "CEO: Peter Schumacher",
+    "founding_year": "2014",
+    "launchers": "",
+    "spacecraft": "",
+    "launch_library_url": null,
+    "total_launch_count": 7,
+    "consecutive_successful_launches": 1,
+    "successful_launches": 4,
+    "failed_launches": 3,
+    "pending_launches": 7,
+    "consecutive_successful_landings": 0,
+    "successful_landings": 0,
+    "failed_landings": 0,
+    "attempted_landings": 0
+  },
+  "rocket": {
+    "id": 8106,
+    "configuration": {
+      "id": 179,
+      "url": "https://ll.thespacedevs.com/2.2.0/config/launcher/179/",
+      "name": "Firefly Alpha",
+      "active": true,
+      "reusable": false,
+      "family": "Firefly Alpha",
+      "full_name": "Firefly Alpha",
+      "manufacturer": {
+        "id": 265,
+        "url": "https://ll.thespacedevs.com/2.2.0/agencies/265/",
+        "name": "Firefly Aerospace",
+        "featured": true,
+        "type": "Commercial",
+        "country_code": "USA",
+        "abbrev": "FA",
+        "administrator": "CEO: Peter Schumacher",
+        "founding_year": "2014",
+        "launchers": "",
+        "spacecraft": "",
+        "launch_library_url": null,
+        "total_launch_count": 7,
+        "consecutive_successful_launches": 1,
+        "successful_launches": 4,
+        "failed_launches": 3,
+        "pending_launches": 7,
+        "consecutive_successful_landings": 0,
+        "successful_landings": 0,
+        "failed_landings": 0,
+        "attempted_landings": 0
+      },
+      "program": [],
+      "variant": "",
+      "alias": "",
+      "min_stage": 2,
+      "max_stage": 2,
+      "length": 29.6,
+      "diameter": 1.82,
+      "maiden_flight": "2021-09-03",
+      "launch_cost": "15000000",
+      "launch_mass": 54,
+      "leo_capacity": 1000,
+      "gto_capacity": null,
+      "to_thrust": 736,
+      "apogee": null,
+      "vehicle_range": null,
+      "total_launch_count": 7,
+      "consecutive_successful_launches": 1,
+      "successful_launches": 4,
+      "failed_launches": 3,
+      "pending_launches": 0,
+      "attempted_landings": 0,
+      "successful_landings": 0,
+      "failed_landings": 0,
+      "consecutive_successful_landings": 0
+    },
+    "launcher_stage": [],
+    "spacecraft_stage": null
+  },
+  "mission": {
+    "id": 6664,
+    "name": "FLTA004 (Fly the Lightning)",
+    "launch_designator": null,
+    "type": "Technology",
+    "orbit": {
+      "id": 8,
+      "name": "Low Earth Orbit",
+      "abbrev": "LEO"
+    },
+    "agencies": [
+      {
+        "id": 82,
+        "url": "https://ll.thespacedevs.com/2.2.0/agencies/82/",
+        "name": "Lockheed Martin",
+        "featured": false,
+        "type": "Commercial",
+        "country_code": "USA",
+        "abbrev": "LMT",
+        "administrator": null,
+        "founding_year": "1953",
+        "launchers": "Titan | Agena",
+        "spacecraft": "Hubble | JUNO | InSight",
+        "launch_library_url": null,
+        "total_launch_count": 80,
+        "consecutive_successful_launches": 38,
+        "successful_launches": 77,
+        "failed_launches": 3,
+        "pending_launches": 0,
+        "consecutive_successful_landings": 0,
+        "successful_landings": 0,
+        "failed_landings": 0,
+        "attempted_landings": 0
+      }
+    ],
+    "info_urls": [],
+    "vid_urls": []
+  },
+  "pad": {
+    "id": 39,
+    "url": "https://ll.thespacedevs.com/2.2.0/pad/39/",
+    "agency_id": null,
+    "name": "Space Launch Complex 2W",
+    "latitude": "34.7556",
+    "longitude": "-120.6224",
+    "location": {
+      "id": 11,
+      "url": "https://ll.thespacedevs.com/2.2.0/location/11/",
+      "name": "Vandenberg SFB, CA, USA",
+      "country_code": "USA",
+      "timezone_name": "America/Los_Angeles",
+      "total_launch_count": 912,
+      "total_landing_count": 35
+    },
+    "country_code": "USA",
+    "total_launch_count": 99,
+    "orbital_launch_attempt_count": 99
+  },
+  "webcast_live": false,
+  "program": [],
+  "orbital_launch_attempt_count": 6579,
+  "location_launch_attempt_count": 738,
+  "pad_launch_attempt_count": 96,
+  "agency_launch_attempt_count": 4,
+  "orbital_launch_attempt_count_year": 211,
+  "location_launch_attempt_count_year": 29,
+  "pad_launch_attempt_count_year": 2,
+  "agency_launch_attempt_count_year": 2,
+  "pad_turnaround": "P98DT15H4M30S",
+  "type": "detailed"
+}

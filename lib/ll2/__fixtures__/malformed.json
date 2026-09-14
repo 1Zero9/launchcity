@@ -1,0 +1,11 @@
+{
+  "id": "malformed-test-case",
+  "name": null,
+  "status": null,
+  "net": "not-a-real-date",
+  "net_precision": null,
+  "launch_service_provider": null,
+  "rocket": null,
+  "pad": null,
+  "mission": null
+}

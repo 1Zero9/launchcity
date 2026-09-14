@@ -1,0 +1,102 @@
+/**
+ * LaunchCity-facing data contract.
+ *
+ * This is the ONLY shape the rest of the application is allowed to depend on.
+ * It intentionally does not mirror Launch Library 2's JSON structure (see
+ * PROJECT-OS.md §1 "LaunchCity v0.1 Data Strategy").
+ *
+ * Scope is deliberately the frozen v0.1 domain boundary: Launch Event,
+ * Mission, Provider, Vehicle (configuration/family level only), Site, Pad.
+ * Payload is NOT a structured entity here - see Mission.payloadSummary.
+ * Booster/launcher-instance data is deliberately not represented.
+ */
+
+/**
+ * How confident the source currently is about the scheduled time.
+ * Derived conservatively from upstream status - NOT the final LaunchCity
+ * status taxonomy (PROJECT-OS.md §1: "delayed"/"scrubbed" must be derived
+ * and recorded by LaunchCity itself, not assumed to exist upstream).
+ */
+export type SchedulingConfidence = "confirmed" | "estimated" | "unknown";
+
+/**
+ * Outcome is a separate concept from scheduling confidence: a launch has no
+ * outcome until it has flown. `null` means "not yet known", not "unknown
+ * forever" and not "failed".
+ */
+export type LaunchOutcome = "success" | "failure" | "partial_failure" | null;
+
+export interface TimePrecision {
+  /**
+   * ISO 8601 UTC timestamp as reported by the source. Can be a placeholder
+   * (e.g. an end-of-month/quarter date) when `precision` is coarse - never
+   * read `net` without also checking `precision`.
+   */
+  net: string | null;
+  /** Upstream precision label, preserved as-is (e.g. "Minute", "Month", "Quarter"). */
+  precision: string | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+}
+
+export interface Provider {
+  sourceId: string | number;
+  name: string | null;
+  /** e.g. "Commercial" | "Government" | "Multinational" - preserved as-is, not a closed enum. */
+  type: string | null;
+}
+
+export interface Vehicle {
+  sourceId: string | number | null;
+  name: string | null;
+  family: string | null;
+}
+
+export interface Site {
+  sourceId: string | number | null;
+  name: string | null;
+  timezone: string | null;
+  countryCode: string | null;
+}
+
+export interface Pad {
+  sourceId: string | number | null;
+  name: string | null;
+}
+
+export interface Mission {
+  sourceId: string | number | null;
+  name: string | null;
+  description: string | null;
+  type: string | null;
+  orbit: string | null;
+  /**
+   * Payload/customer information as descriptive text only. Real API
+   * evidence showed no structured, itemised payload manifest even for
+   * rideshares - see PROJECT-OS.md domain validation. Do not turn this
+   * into a list without new evidence.
+   */
+  payloadSummary: string | null;
+}
+
+export interface NormalizedLaunch {
+  /**
+   * Upstream source identifier. Retained so a snapshot can reference back
+   * to Launch Library 2, but NOT treated as LaunchCity's permanent
+   * canonical ID (identifier strategy is explicitly undecided).
+   */
+  sourceId: string;
+  name: string | null;
+  time: TimePrecision;
+  schedulingConfidence: SchedulingConfidence;
+  outcome: LaunchOutcome;
+  /** Raw upstream status text, preserved for display/debugging only. */
+  upstreamStatus: string | null;
+  /** Free-text outcome detail (e.g. failure reason), preserved as-is. */
+  outcomeDetail: string | null;
+  provider: Provider | null;
+  vehicle: Vehicle | null;
+  site: Site | null;
+  pad: Pad | null;
+  mission: Mission | null;
+}

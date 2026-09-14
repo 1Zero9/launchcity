@@ -1,0 +1,301 @@
+{
+  "id": "17c71937-dd80-406f-bb47-0c9ee9a24276",
+  "url": "https://ll.thespacedevs.com/2.2.0/launch/17c71937-dd80-406f-bb47-0c9ee9a24276/",
+  "slug": "falcon-9-block-5-ussf-259",
+  "r_spacex_api_id": null,
+  "name": "Falcon 9 Block 5 | USSF-259",
+  "status": {
+    "id": 1,
+    "name": "Go for Launch",
+    "abbrev": "Go"
+  },
+  "last_updated": "2026-09-09T16:07:51Z",
+  "updates": [
+    {
+      "id": 16087,
+      "comment": "Added launch.",
+      "created_by": "Cosmic_Penguin",
+      "created_on": "2026-09-09T16:07:00Z"
+    }
+  ],
+  "net": "2026-09-16T01:00:00Z",
+  "net_precision": {
+    "id": 1,
+    "name": "Minute",
+    "abbrev": "MIN"
+  },
+  "window_end": "2026-09-16T05:00:00Z",
+  "window_start": "2026-09-16T01:00:00Z",
+  "probability": null,
+  "weather_concerns": null,
+  "holdreason": "",
+  "failreason": "",
+  "hashtag": null,
+  "launch_service_provider": {
+    "id": 121,
+    "url": "https://ll.thespacedevs.com/2.2.0/agencies/121/",
+    "name": "SpaceX",
+    "featured": true,
+    "type": "Commercial",
+    "country_code": "USA",
+    "abbrev": "SpX",
+    "administrator": "CEO: Elon Musk",
+    "founding_year": "2002",
+    "launchers": "Falcon | Starship",
+    "spacecraft": "Dragon",
+    "launch_library_url": null,
+    "total_launch_count": 728,
+    "consecutive_successful_launches": 213,
+    "successful_launches": 713,
+    "failed_launches": 15,
+    "pending_launches": 125,
+    "consecutive_successful_landings": 21,
+    "successful_landings": 672,
+    "failed_landings": 29,
+    "attempted_landings": 700
+  },
+  "rocket": {
+    "id": 9134,
+    "configuration": {
+      "id": 164,
+      "url": "https://ll.thespacedevs.com/2.2.0/config/launcher/164/",
+      "name": "Falcon 9",
+      "active": true,
+      "reusable": true,
+      "family": "Falcon",
+      "full_name": "Falcon 9 Block 5",
+      "manufacturer": {
+        "id": 121,
+        "url": "https://ll.thespacedevs.com/2.2.0/agencies/121/",
+        "name": "SpaceX",
+        "featured": true,
+        "type": "Commercial",
+        "country_code": "USA",
+        "abbrev": "SpX",
+        "administrator": "CEO: Elon Musk",
+        "founding_year": "2002",
+        "launchers": "Falcon | Starship",
+        "spacecraft": "Dragon",
+        "launch_library_url": null,
+        "total_launch_count": 728,
+        "consecutive_successful_launches": 213,
+        "successful_launches": 713,
+        "failed_launches": 15,
+        "pending_launches": 125,
+        "consecutive_successful_landings": 21,
+        "successful_landings": 672,
+        "failed_landings": 29,
+        "attempted_landings": 700
+      },
+      "program": [
+        {
+          "id": 11,
+          "url": "https://ll.thespacedevs.com/2.2.0/program/11/",
+          "name": "Commercial Resupply Services",
+          "agencies": [
+            {
+              "id": 44,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/44/",
+              "name": "National Aeronautics and Space Administration",
+              "type": "Government"
+            },
+            {
+              "id": 257,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/257/",
+              "name": "Northrop Grumman Space Systems",
+              "type": "Commercial"
+            },
+            {
+              "id": 1020,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/1020/",
+              "name": "Sierra Nevada Corporation",
+              "type": "Commercial"
+            },
+            {
+              "id": 121,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/121/",
+              "name": "SpaceX",
+              "type": "Commercial"
+            }
+          ],
+          "start_date": "2008-12-23T00:00:00Z",
+          "end_date": null,
+          "type": {
+            "id": 2,
+            "name": "Human Spaceflight"
+          }
+        },
+        {
+          "id": 5,
+          "url": "https://ll.thespacedevs.com/2.2.0/program/5/",
+          "name": "Commercial Crew Program",
+          "agencies": [
+            {
+              "id": 80,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/80/",
+              "name": "Boeing",
+              "type": "Commercial"
+            },
+            {
+              "id": 44,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/44/",
+              "name": "National Aeronautics and Space Administration",
+              "type": "Government"
+            },
+            {
+              "id": 121,
+              "url": "https://ll.thespacedevs.com/2.2.0/agencies/121/",
+              "name": "SpaceX",
+              "type": "Commercial"
+            }
+          ],
+          "start_date": "2011-04-18T00:00:00Z",
+          "end_date": null,
+          "type": {
+            "id": 2,
+            "name": "Human Spaceflight"
+          }
+        }
+      ],
+      "variant": "Block 5",
+      "alias": "",
+      "min_stage": 2,
+      "max_stage": 2,
+      "length": 70.0,
+      "diameter": 3.65,
+      "maiden_flight": "2018-05-11",
+      "launch_cost": "52000000",
+      "launch_mass": 549,
+      "leo_capacity": 22800,
+      "gto_capacity": 8300,
+      "to_thrust": 7607,
+      "apogee": 200,
+      "vehicle_range": null,
+      "total_launch_count": 631,
+      "consecutive_successful_launches": 333,
+      "successful_launches": 630,
+      "failed_launches": 1,
+      "pending_launches": 108,
+      "attempted_landings": 621,
+      "successful_landings": 616,
+      "failed_landings": 5,
+      "consecutive_successful_landings": 316
+    },
+    "launcher_stage": [
+      {
+        "id": 991,
+        "type": "Core",
+        "reused": true,
+        "launcher_flight_number": 13,
+        "launcher": {
+          "id": 199,
+          "url": "https://ll.thespacedevs.com/2.2.0/launcher/199/",
+          "details": "Falcon 9 booster.",
+          "flight_proven": true,
+          "serial_number": "B1097",
+          "status": "active",
+          "successful_landings": 12,
+          "attempted_landings": 12,
+          "flights": 12,
+          "last_launch_date": "2026-08-19T04:01:07Z",
+          "first_launch_date": "2025-09-03T03:51:26Z"
+        },
+        "landing": {
+          "id": 1952,
+          "attempt": true,
+          "success": null,
+          "downrange_distance": 574.0,
+          "location": {
+            "id": 1,
+            "name": "Of Course I Still Love You",
+            "abbrev": "OCISLY",
+            "location": null,
+            "successful_landings": 225
+          },
+          "type": {
+            "id": 1,
+            "name": "Autonomous Spaceport Drone Ship",
+            "abbrev": "ASDS"
+          }
+        },
+        "previous_flight_date": "2026-08-19T04:01:07Z",
+        "turn_around_time_days": 27,
+        "previous_flight": {
+          "id": "f6958a77-37bb-4559-a108-40ba0ff9e34a",
+          "name": "Falcon 9 Block 5 | Starlink Group 17-50"
+        }
+      }
+    ],
+    "spacecraft_stage": null
+  },
+  "mission": {
+    "id": 7733,
+    "name": "USSF-259",
+    "launch_designator": null,
+    "type": "Government/Top Secret",
+    "orbit": {
+      "id": 13,
+      "name": "Polar Orbit",
+      "abbrev": "PO"
+    },
+    "agencies": [
+      {
+        "id": 1041,
+        "url": "https://ll.thespacedevs.com/2.2.0/agencies/1041/",
+        "name": "United States Space Force",
+        "featured": false,
+        "type": "Government",
+        "country_code": "USA",
+        "abbrev": "USSF",
+        "administrator": "Chief of Space Operations: Gen. Douglas Schiess",
+        "founding_year": "2019",
+        "launchers": "",
+        "spacecraft": "",
+        "launch_library_url": null,
+        "total_launch_count": 0,
+        "consecutive_successful_launches": 0,
+        "successful_launches": 0,
+        "failed_launches": 0,
+        "pending_launches": 0,
+        "consecutive_successful_landings": 0,
+        "successful_landings": 0,
+        "failed_landings": 0,
+        "attempted_landings": 0
+      }
+    ],
+    "info_urls": [],
+    "vid_urls": []
+  },
+  "pad": {
+    "id": 16,
+    "url": "https://ll.thespacedevs.com/2.2.0/pad/16/",
+    "agency_id": null,
+    "name": "Space Launch Complex 4E",
+    "latitude": "34.632",
+    "longitude": "-120.611",
+    "location": {
+      "id": 11,
+      "url": "https://ll.thespacedevs.com/2.2.0/location/11/",
+      "name": "Vandenberg SFB, CA, USA",
+      "country_code": "USA",
+      "timezone_name": "America/Los_Angeles",
+      "total_launch_count": 912,
+      "total_landing_count": 35
+    },
+    "country_code": "USA",
+    "total_launch_count": 296,
+    "orbital_launch_attempt_count": 296
+  },
+  "webcast_live": false,
+  "program": [],
+  "orbital_launch_attempt_count": 7393,
+  "location_launch_attempt_count": 913,
+  "pad_launch_attempt_count": 297,
+  "agency_launch_attempt_count": 729,
+  "orbital_launch_attempt_count_year": 220,
+  "location_launch_attempt_count_year": 61,
+  "pad_launch_attempt_count_year": 59,
+  "agency_launch_attempt_count_year": 110,
+  "pad_turnaround": "P5DT9H17M30S",
+  "type": "detailed"
+}

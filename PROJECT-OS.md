@@ -28,11 +28,10 @@ Initially general space enthusiasts and people who want a clear view of upcoming
 Potential future audiences such as researchers, journalists, educators or specialist enthusiasts are not assumed for v0.1.
 
 **What already exists:**
-- Blank GitHub repository: `1Zero9/launchcity`
-- Empty local working folder
-- No application architecture or technology stack selected
-- No launch-data provider selected
-- No UI or visual direction selected
+- GitHub repository: `1Zero9/launchcity`
+- **[2026-09-14] Minimum technical foundation implemented** — Next.js (TypeScript, App Router) proving the LL2 → adapter → LaunchCity contract → cache → application path end-to-end with real data. See §2/§3 for material findings and the Experiment Log for details. Not the product UI.
+- No launch-data provider question remains — Launch Library 2 decided and now integrated.
+- No UI or visual direction selected (out of scope for this phase by design)
 
 **Important constraints:**
 - Launch information changes frequently.
@@ -122,6 +121,8 @@ Only record previous knowledge that is relevant to a current decision.
 
 | **[2026-09-14] Architecture recommendation (pending approval)** | LL2's free tier works with fully anonymous requests (confirmed during domain validation — no Authorization header required for reads), which simplifies v0.1 config/secrets to "optional API token" rather than a mandatory credential. A managed serverless platform with built-in cron + KV (this environment already has first-party Vercel tooling available) removes the "keep a long-running process alive" operational burden that would otherwise be the main maintenance cost for a small project. A disposable KV cache (key→normalized-JSON blobs) satisfies "local cache, not canonical store" better than in-memory (doesn't survive restarts) or SQLite (implies row/table structure the domain boundary hasn't earned yet). | Directly shapes the smallest viable v0.1 architecture; recorded so the reasoning isn't re-derived later | Use, pending the 3 architecture decisions in Decision Required |
 
+| **[2026-09-14] Implementation of the minimum technical foundation** | Vercel's Hobby (free) plan only supports daily cron jobs — the approved ~15 min refresh cadence cannot run on Vercel's own cron at zero cost. Resolved by using a free GitHub Actions scheduled workflow to call a protected `/api/refresh` route instead; the architecture pattern itself (managed serverless platform + KV cache + scheduled refresh) is unaffected, only the specific scheduling mechanism. Measured real request cost: one refresh cycle = **2 upstream LL2 requests** (one `/launch/upcoming/`, one `/launch/previous/`), confirmed against the real API — comfortably within the 15 req/hour budget even well under a 15 min cadence (4/hour would use 8 requests/hour). The `server-only` Next.js guard package could not be used in the lib/ layer because it throws outside Next's own build pipeline, which broke plain Node/tsx unit testing; removed in favour of relying on the App Router's inherent server/client boundary (Route Handlers and Server Components never ship to the browser) — the "never call LL2 from the browser" guarantee still holds structurally, just without that specific package. | Confirms the approved architecture works end-to-end against real data and pins down the one open number (request cost) the architecture decision explicitly deferred | Use |
+
 **Current knowledge gaps:**
 - Exact production rate limit for a paid/patron tier of Launch Library 2, and whether that scales to LaunchCity's expected traffic (not yet measured — no traffic exists yet).
 - Whether Launch Library 2's "database dump"/paid options exist for bulk historical import (relevant if we later want a canonical local store rather than live pass-through).
@@ -148,7 +149,8 @@ Only include material risks.
 
 | A fixed-cadence (10–15 min) refresh, chosen for v0.1 simplicity, is not proximity-aware to launch windows | A scrub or reschedule minutes before T-0 could be stale on LaunchCity for up to a full refresh cycle, right when it matters most to users | Named and accepted as a v0.1 limitation, not hidden; always show "last refreshed" so staleness is visible; proximity-aware tightened polling is the first candidate enhancement post-v0.1 | — |
 | All LL2-specific field-shape knowledge concentrated in one adapter module (by design) | If the adapter itself has a bug or the upstream schema changes silently, it's a single point of failure for all data quality | This is an accepted, deliberate tradeoff — the alternative (LL2 knowledge scattered through the app) is worse; mitigate with defensive per-record parsing so one bad record doesn't blank the whole cache | — |
-| Assuming one refresh cycle costs exactly one upstream API request | A ~15 min cadence chosen on that assumption could silently exceed the ~15 req/hour budget once pagination, multiple endpoints (upcoming + previous), or retries are added during implementation | Measure the actual request cost of one refresh cycle during implementation before finalising the cadence; do not hardcode 15 minutes as a guarantee of staying under budget | — |
+| Assuming one refresh cycle costs exactly one upstream API request | A ~15 min cadence chosen on that assumption could silently exceed the ~15 req/hour budget once pagination, multiple endpoints (upcoming + previous), or retries are added during implementation | **[2026-09-14] Resolved by measurement: one refresh = 2 requests (upcoming + previous), confirmed against the real API. 15 min cadence stays comfortably within budget.** | — |
+| Vercel Hobby (free) plan cron jobs are limited to once per day — cannot natively run a ~15 min refresh cadence at zero cost | Deploying with the assumption that Vercel's own cron would drive the refresh would silently fail to meet the approved cadence, or force an unplanned upgrade to Pro | Use a free external scheduler (GitHub Actions scheduled workflow) to call the protected `/api/refresh` route instead; the approved architecture pattern (managed platform + KV cache + scheduled refresh) is unaffected, only the specific triggering mechanism | — |
 
 **Time/lifecycle concerns:**
 Launch status changes continuously and unpredictably (delays/scrubs can happen minutes before a window). Any caching layer needs a refresh cadence short enough to catch pre-launch status changes without exceeding rate limits — likely a shorter poll interval as a launch's window approaches, rather than one fixed global interval.
@@ -215,6 +217,16 @@ Only capture something likely to improve a future decision.
 **Candidate type:** Pattern
 **Future relevance:** Before adopting any external API's implied data model, validate a deliberately varied sample of real responses (edge cases: uncertain/missing data, failure states, multi-item cases, least-complete-coverage cases) rather than inferring the model from documentation or a handful of "happy path" examples.
 
+### Learning record
+
+**Date:** 2026-09-14
+**What happened:** Built and proved the minimum technical foundation (LL2 → adapter → contract → cache → app) end-to-end against real data.
+**What we expected:** The approved architecture pattern to translate into implementation without surprises, since it had already been through two Scope & Stop checks.
+**What we learned:** Two genuinely new implementation-level facts only became visible by building, not by more analysis: (1) Vercel's free-tier cron can't actually run the approved ~15 min cadence (daily-only on Hobby) — a real platform constraint no amount of architecture-level research would have surfaced, since it's a pricing-tier detail, not a design question; and (2) the `server-only` package (the idiomatic Next.js way to enforce a server/client boundary) is incompatible with plain Node unit testing, forcing a choice between that specific package and testability — resolved by relying on the App Router's structural guarantee instead. Both were resolved without reopening the frozen architecture, exactly as anticipated when the freeze was recorded ("implementation reveals a genuine contradiction" was the threshold, and both were real but narrow, solvable within the approved pattern).
+**Reusable beyond this project?** Yes
+**Candidate type:** Pattern
+**Future relevance:** Free-tier platform limits (cron granularity, function timeouts, etc.) are worth a quick concrete check during implementation even when the higher-level architecture pattern is sound — they're the kind of constraint that's invisible until you try to configure the actual thing.
+
 ---
 
 ## Project OS Experiment Log
@@ -228,3 +240,4 @@ Only capture something likely to improve a future decision.
 | 2026-09-14 | Project OS v0.1 Architecture Recommendation | Recommend the minimum technical architecture for LaunchCity v0.1, respecting the frozen domain direction | Yes (pending approval) | None | Recommended: managed serverless platform + disposable KV cache + fixed-cadence (10–15 min) scheduled refresh + LL2 adapter/contract boundary; historical launches served as a cached pass-through of LL2's own previous-launches data, not a LaunchCity-built archive. 3 decisions require approval before scaffolding (platform+cache pattern, fixed-cadence polling, historical-as-pass-through). Full reasoning, options considered, and risk check in conversation; §2/§3 amended with new architecture knowledge and 2 new risks (proximity-blind refresh, adapter as single point of failure). |
 | 2026-09-14 | Project OS v0.1 Architecture — Decision Recorded | Record approved architecture decisions (platform+cache pattern, fixed cadence with request-cost caveat, historical as pass-through) and additional constraints | Yes | None | Approved and recorded in §1. Added risk: refresh cadence must not assume one refresh equals one upstream request; actual cost must be measured during implementation before finalising cadence. |
 | 2026-09-14 | Project OS Architecture Scope & Stop Check | Challenge whether any unresolved architecture question genuinely blocks scaffolding | Yes | None | Decision: FREEZE ARCHITECTURE. No blocking unknowns found — remaining open items (vendor selection, final cadence number, retry detail) are ordinary implementation-time choices, not open architecture questions. Full reasoning in §4. |
+| 2026-09-14 | LaunchCity v0.1 Minimum Technical Foundation | Prove the frozen architecture end-to-end: LL2 → server-side adapter → LaunchCity contract → disposable cache → server-side app access | Yes | Low | Next.js (TypeScript) scaffolded; LL2 adapter, contract, cache abstraction (FileCache for dev + untested-but-implemented KvCache for prod), refresh orchestration, diagnostics page, and 15 unit tests covering all 8 requested failure scenarios all built and verified against real LL2 data. Measured request cost: 2 requests/refresh. Discovered Vercel Hobby cron is daily-only — resolved with a GitHub Actions scheduled workflow, not a reopening of the architecture decision. `server-only` package dropped in favour of the App Router's structural server/client boundary, for testability. Full report in conversation; §1/§2/§3 amended. |
