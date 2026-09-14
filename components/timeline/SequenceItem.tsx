@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import type { NormalizedLaunch } from "@/lib/contract";
 import { describeLaunchTime, describeOutcome, describePastLaunchDate } from "@/lib/timeFormat";
 import { orUnknown } from "@/lib/text";
@@ -8,7 +9,8 @@ import styles from "./HorizonTimeline.module.css";
  * One entry in the secondary sequence - a recently-flown launch (outcome
  * carries the weight) or an upcoming one (time carries the weight).
  * Deliberately lighter than DominantLaunch: name + one line, plus a quiet
- * marker attaching it to the horizon rail.
+ * marker attaching it to the horizon rail. A real interaction target -
+ * opens Launch Detail for this specific launch.
  *
  * `distance` (1 = closest to the dominant launch) drives a restrained
  * scale/opacity reduction as items recede further from "next" - never
@@ -28,16 +30,23 @@ export function SequenceItem({
     variant === "past"
       ? `${describeOutcome(launch.outcome)} · ${describePastLaunchDate(launch.time)}`
       : describeLaunchTime(launch.time, launch.schedulingConfidence);
+  const name = orUnknown(launch.name);
 
   return (
     <li
       className={variant === "past" ? styles.pastItem : styles.futureItem}
       style={{ "--distance": distance } as CSSProperties}
     >
-      <div className={styles.itemContent}>
-        <p className={styles.sequenceName}>{orUnknown(launch.name)}</p>
-        <p className={styles.sequenceStatus}>{status}</p>
-      </div>
+      <Link
+        href={`/launch/${launch.sourceId}`}
+        className={styles.sequenceLink}
+        aria-label={`View details for ${name}`}
+      >
+        <div className={styles.itemContent}>
+          <p className={styles.sequenceName}>{name}</p>
+          <p className={styles.sequenceStatus}>{status}</p>
+        </div>
+      </Link>
       <span className={styles.marker} aria-hidden="true" />
     </li>
   );

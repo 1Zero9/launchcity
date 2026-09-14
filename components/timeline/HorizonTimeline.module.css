@@ -62,6 +62,32 @@
   min-width: 0;
 }
 
+/* Real interaction targets now that Launch Detail exists - kept quiet by
+   default (no underline, inherited colour) with a restrained hover/focus
+   treatment on the text itself so the item doesn't need a card/border to
+   read as clickable. */
+.sequenceLink {
+  display: block;
+  color: inherit;
+  border-radius: 0.25rem;
+}
+
+.sequenceLink:hover .sequenceName,
+.sequenceLink:focus-visible .sequenceName {
+  color: var(--lc-fg);
+}
+
+.dominantLink {
+  display: block;
+  color: inherit;
+  border-radius: 0.5rem;
+}
+
+.dominantLink:hover .dominantName,
+.dominantLink:focus-visible .dominantName {
+  color: var(--lc-accent);
+}
+
 .sequenceName {
   font-size: 0.9375rem;
   font-weight: 500;

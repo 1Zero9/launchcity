@@ -1,6 +1,8 @@
+import Link from "next/link";
 import type { CacheFreshness } from "@/lib/cache";
 import type { LaunchSequence } from "@/lib/timeline";
 import { describeFreshness } from "@/lib/timeFormat";
+import { orUnknown } from "@/lib/text";
 import { DominantLaunch } from "./DominantLaunch";
 import { SequenceItem } from "./SequenceItem";
 import styles from "./HorizonTimeline.module.css";
@@ -41,7 +43,13 @@ export function HorizonTimeline({
 
         {dominant ? (
           <li className={styles.dominantItem} aria-current="true">
-            <DominantLaunch launch={dominant} />
+            <Link
+              href={`/launch/${dominant.sourceId}`}
+              className={styles.dominantLink}
+              aria-label={`View details for ${orUnknown(dominant.name)}`}
+            >
+              <DominantLaunch launch={dominant} />
+            </Link>
             <span className={styles.dominantMarker} aria-hidden="true" />
           </li>
         ) : (

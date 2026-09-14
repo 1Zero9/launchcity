@@ -1,0 +1,134 @@
+.detail {
+  width: 100%;
+  max-width: 38rem;
+  margin-inline: auto;
+  padding: var(--lc-space-3) var(--lc-space-2) var(--lc-space-5);
+}
+
+.back {
+  display: inline-block;
+  font-size: 0.875rem;
+  color: var(--lc-fg-muted);
+  margin-bottom: var(--lc-space-4);
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--lc-fg-secondary);
+}
+
+.identity {
+  position: relative;
+  margin-bottom: var(--lc-space-4);
+}
+
+/* This is the same marker/rail device from the Horizon, not a new
+   decorative motif - a short fragment of the rail carries forward with
+   the dot, so it still reads as "the point you selected", not a floating
+   dot. Purely decorative (the text below states everything it implies). */
+.marker {
+  position: relative;
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--lc-accent);
+  margin-bottom: var(--lc-space-2);
+  box-shadow:
+    0 0 0.5rem 0.125rem var(--lc-accent-soft),
+    0 0 1.5rem 0.4rem var(--lc-accent-soft);
+}
+
+.marker::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3.5rem;
+  height: 1px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, var(--lc-accent) 50%, transparent);
+  opacity: 0.55;
+  z-index: -1;
+}
+
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lc-accent);
+  margin-bottom: var(--lc-space-1);
+}
+
+.name {
+  font-size: clamp(1.625rem, 4.5vw, 2.5rem);
+  font-weight: 650;
+  line-height: 1.15;
+  color: var(--lc-fg);
+  letter-spacing: -0.01em;
+}
+
+.time,
+.outcome {
+  margin-top: var(--lc-space-2);
+  font-size: 1.0625rem;
+  color: var(--lc-fg-secondary);
+}
+
+.confidence {
+  color: var(--lc-accent);
+}
+
+.subtle {
+  color: var(--lc-fg-muted);
+}
+
+.section {
+  margin-top: var(--lc-space-4);
+  padding-top: var(--lc-space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lc-fg-muted);
+  margin-bottom: var(--lc-space-2);
+}
+
+.body {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--lc-fg-secondary);
+  max-width: 34rem;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lc-space-3) var(--lc-space-4);
+  margin-top: var(--lc-space-2);
+}
+
+.facts dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lc-fg-muted);
+}
+
+.facts dd {
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--lc-fg);
+}
+
+.provenance {
+  margin-top: var(--lc-space-5);
+  font-size: 0.75rem;
+  color: var(--lc-fg-muted);
+}
