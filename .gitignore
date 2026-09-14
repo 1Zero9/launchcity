@@ -37,6 +37,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare / opennext
+/.open-next
+/.wrangler
+.dev.vars
+worker-configuration.d.ts
+
 # local development cache (disposable - see lib/cache/fileCache.ts)
 /.cache
 

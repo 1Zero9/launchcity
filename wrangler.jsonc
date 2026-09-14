@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "launchcity",
+  "main": "./custom-worker.ts",
+  "compatibility_date": "2026-09-14",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "services": [
+    { "binding": "WORKER_SELF_REFERENCE", "service": "launchcity" }
+  ],
+
+  // Disposable/rebuildable cache - NOT a canonical historical database
+  // (PROJECT-OS.md architecture decision). Real namespace id created via
+  // `wrangler kv namespace create LAUNCHES_KV`.
+  "kv_namespaces": [
+    { "binding": "LAUNCHES_KV", "id": "c60df35f9ef14a05b386d88736f53f5e" }
+  ],
+
+  // Fixed ~15 minute refresh cadence (PROJECT-OS.md), measured at 2 LL2
+  // requests per refresh - comfortably within the ~15 req/hour budget.
+  // Deliberately not proximity-aware to launch windows (deferred).
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  }
+}

@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { refreshLaunchData } from "@/lib/refresh";
 
 /**
- * Triggers one refresh cycle. Intended to be called by an external
- * scheduler (see .github/workflows/refresh.yml) rather than a visitor's
- * browser - the request never reaches LL2 directly either way, since this
- * route runs server-side and calls the LL2 adapter itself.
+ * Manual/diagnostic refresh trigger. The production refresh is driven by
+ * Cloudflare Cron Triggers (see custom-worker.ts's `scheduled()` handler),
+ * not this route - this exists for on-demand testing/inspection. Either
+ * way the request never reaches LL2 directly, since this route runs
+ * server-side and calls the LL2 adapter itself.
  *
  * Protected by a shared secret so this endpoint can't be used by a
  * stranger to burn through the upstream rate-limit budget.
