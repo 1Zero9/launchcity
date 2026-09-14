@@ -1,0 +1,184 @@
+.horizon {
+  position: relative;
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: var(--lc-space-4) var(--lc-space-2) var(--lc-space-3);
+}
+
+/* Purely decorative horizon curve - aria-hidden, carries no information. */
+.arc {
+  position: absolute;
+  inset: 0 0 auto 0;
+  top: 45%;
+  width: 100%;
+  height: 8rem;
+  color: var(--lc-fg-faint);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sequence {
+  position: relative;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: clamp(0.5rem, 2vw, 2rem);
+}
+
+.pastItem,
+.futureItem {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.pastItem {
+  opacity: 0.85;
+}
+
+.sequenceName {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--lc-fg-secondary);
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+.sequenceStatus {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--lc-fg-muted);
+}
+
+.dominantItem {
+  flex: 2.5 1 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--lc-space-1);
+}
+
+.dominant {
+  position: relative;
+  max-width: 40rem;
+  min-width: 0;
+  text-align: center;
+  padding: var(--lc-space-3) var(--lc-space-2);
+}
+
+/* Restrained glow behind the dominant launch - the one place the accent
+   colour is allowed to dominate visually, and it carries no text of its
+   own, so it can be removed without losing information. */
+.dominant::before {
+  content: "";
+  position: absolute;
+  inset: -3rem -2rem;
+  background: radial-gradient(ellipse at center, var(--lc-accent-soft), transparent 70%);
+  z-index: -1;
+}
+
+.dominantEyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lc-accent);
+  margin-bottom: var(--lc-space-1);
+}
+
+.dominantName {
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  font-weight: 650;
+  line-height: 1.1;
+  color: var(--lc-fg);
+  letter-spacing: -0.01em;
+}
+
+.dominantTime {
+  margin-top: var(--lc-space-1);
+  font-size: clamp(1.0625rem, 2.4vw, 1.375rem);
+  color: var(--lc-fg-secondary);
+}
+
+.confidence {
+  color: var(--lc-accent);
+}
+
+.dominantFacts {
+  margin-top: var(--lc-space-3);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lc-space-3);
+}
+
+.dominantFacts dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lc-fg-muted);
+}
+
+.dominantFacts dd {
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--lc-fg);
+}
+
+.freshness {
+  margin-top: var(--lc-space-4);
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--lc-fg-muted);
+}
+
+.freshness.stale {
+  color: var(--lc-accent);
+}
+
+/* Mobile: reinterpret the horizon as a vertical sequence rather than
+   shrinking the horizontal layout until it becomes unreadable. */
+@media (max-width: 640px) {
+  .arc {
+    display: none;
+  }
+
+  .sequence {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-left: 0;
+  }
+
+  .sequence::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--lc-fg-faint) 20%,
+      var(--lc-accent) 50%,
+      var(--lc-fg-faint) 80%,
+      transparent
+    );
+    z-index: -1;
+  }
+
+  .pastItem,
+  .futureItem,
+  .dominantItem {
+    max-width: 20rem;
+  }
+
+  .dominant {
+    padding: var(--lc-space-2);
+  }
+}

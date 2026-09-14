@@ -1,0 +1,16 @@
+.header {
+  padding: var(--lc-space-2) var(--lc-space-2) 0;
+}
+
+.identity {
+  display: inline-block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--lc-fg-secondary);
+}
+
+.identity:hover,
+.identity:focus-visible {
+  color: var(--lc-fg);
+}

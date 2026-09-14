@@ -1,15 +1,30 @@
+import { getCacheStore, freshnessOf, STALE_AFTER_MS } from "@/lib/cache";
+import { LAUNCHES_CACHE_KEY } from "@/lib/refresh";
+import { buildLaunchSequence } from "@/lib/timeline";
+import type { NormalizedLaunch } from "@/lib/contract";
+import { HorizonTimeline } from "@/components/timeline/HorizonTimeline";
+
+export const dynamic = "force-dynamic";
+
 /**
- * Placeholder only. No product UI/design work has been done yet
- * (PROJECT-OS.md: architecture-proving phase, not product design).
+ * The Primary Timeline Experience (frozen experience architecture) - the
+ * single entry point. The next launch dominates; a small recent/upcoming
+ * sequence provides chronological context. Launch Detail does not exist
+ * yet, so sequence items are not interaction targets in this phase.
  */
-export default function Home() {
+export default async function Home() {
+  const store = getCacheStore<NormalizedLaunch[]>();
+  const snapshot = await store.read(LAUNCHES_CACHE_KEY);
+  const freshness = freshnessOf(snapshot, STALE_AFTER_MS);
+  const sequence = buildLaunchSequence(snapshot?.data ?? []);
+
   return (
-    <main style={{ fontFamily: "system-ui", padding: "2rem" }}>
-      <h1>LaunchCity</h1>
-      <p>
-        Technical foundation under construction. See{" "}
-        <a href="/diagnostics">/diagnostics</a> for the current cache/data state.
-      </p>
+    <main>
+      <HorizonTimeline
+        sequence={sequence}
+        lastSuccessfulRefresh={snapshot?.lastSuccessfulRefresh ?? null}
+        freshness={freshness}
+      />
     </main>
   );
 }

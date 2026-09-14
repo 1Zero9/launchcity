@@ -14,6 +14,10 @@ export interface CacheSnapshot<T> {
 
 export type CacheFreshness = "fresh" | "stale" | "empty";
 
+/** v0.1 fixed staleness threshold (roughly 2x the target ~15 min refresh
+ * cadence). Not proximity-aware - see PROJECT-OS.md "explicitly deferred". */
+export const STALE_AFTER_MS = 30 * 60 * 1000;
+
 export interface CacheStore<T> {
   read(key: string): Promise<CacheSnapshot<T> | null>;
   /** A failed refresh must never call write() - callers preserve the
