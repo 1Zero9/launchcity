@@ -354,6 +354,16 @@ Only capture something likely to improve a future decision.
 **Candidate type:** Pattern
 **Future relevance:** The Scope & Stop mechanism is good at catching drift from decisions already made, but is not naturally suited to noticing gaps nobody decided about yet - worth being aware of that blind spot rather than assuming the checks are exhaustive. Separately: an early, lightweight identity seed (not a frozen visual direction) may be worth offering proactively at project start in future work, as a option rather than a requirement.
 
+### Learning record
+
+**Date:** 2026-09-14
+**What happened:** Investigated why production was serving an honest empty state (LL2 rate-limit exhaustion, no cached snapshot) despite the architecture's own "serve last-good snapshot on failure" design being frozen and previously proven.
+**What we expected:** That the same resilience already proven for "a snapshot exists, a refresh later fails" would obviously also cover "no snapshot has ever existed yet, and the first refreshes fail."
+**What we learned:** These are genuinely two different failure scenarios, even though LaunchCity's current implementation happens to handle both via the same unconditional refresh path (code-confirmed: no bootstrap-specific branch, no backoff/circuit-breaker state that could suppress future attempts). The distinction only became visible by deliberately investigating an empty-cache production state, not from the last-good-snapshot testing done during the Cloudflare migration and Primary Timeline phases. Classified as a temporary operational release gate (LL2 rate-limit exhaustion from a concentrated day of testing), not a design defect - no code, architecture, or configuration change was made or needed.
+**Reusable beyond this project?** Yes
+**Candidate type:** Pattern
+**Future relevance:** *"Last-good-cache resilience and empty-cache bootstrap resilience are different failure scenarios."* Recorded as evidence only - not promoted into a Project OS rule. Worth testing explicitly (not just assuming coverage) whenever a system's resilience claim rests on "serve the last good state" - the true cold-start case (no last good state has ever existed) is a distinct scenario worth checking on its own.
+
 ---
 
 ## Project OS Experiment Log
