@@ -40,7 +40,7 @@ Potential future audiences such as researchers, journalists, educators or specia
 - Information will likely depend on external data sources.
 - Sources may disagree on launch details or status.
 - Data may contain unknown, provisional or classified payload information.
-- The product needs to distinguish planned, confirmed, delayed, scrubbed, launched, failed and completed events.
+- The product needs to distinguish planned, confirmed, delayed, scrubbed, launched, failed and completed events. **[2026-09-14: validated against real Launch Library 2 data — this remains the product requirement, but LL2's own `status` field does not expose these states directly (only Go/TBC/TBD/Success/Failure/Partial Failure); "delayed" and "scrubbed" must be derived and recorded by LaunchCity itself, not read from upstream. See §2/§3.]**
 - Global launches mean dates and times must be handled correctly across time zones.
 - The initial product should not attempt to become a general space-news site.
 
@@ -64,6 +64,8 @@ Candidate LaunchCity domain concepts, to be tested against real API data before 
 - Provider
 - Payload
 - Site / Pad
+
+**[2026-09-14] Validated against real Launch Library 2 data (6 live API calls) — outcome: Payload does not survive as a structured v0.1 entity (LL2 exposes only mission-level aggregates, no itemised manifests even for rideshares); Vehicle is evidenced as 3 layers (configuration/family, individual booster, this-launch usage), only the first of which is needed for v0.1; Launch Event, Mission, Provider, Site and Pad are each confirmed as genuinely distinct by real examples. This validation is not yet a decision — see Decision Required in the validation exercise output for what needs approval.**
 
 **Main uncertainties (NOT YET DECIDED):**
 - Persistent database schema
@@ -111,10 +113,14 @@ Only record previous knowledge that is relevant to a current decision.
 | FAA Office of Commercial Space Transportation (AST) | Publishes licensing/approval data for US-licensed commercial launches and reentries; not a structured, general-purpose launch schedule API. Its emerging "Space Data Integrator" is about airspace safety integration, not public launch discovery. | Not usable as a primary data feed — it is regulatory/licensing data, US-only, and not shaped as launch events with mission/payload detail. Could be a future authority check for US commercial launch legitimacy, not a v0.1 dependency. | Ignore for v0.1 |
 | NASA Open Data Portal ("NASA Spacecraft Launch Schedule") | A dataset (not a live API in the sense of LL2), NASA-mission-scoped, with unclear update cadence — last-updated snapshot observed was 2025. | Too narrow (NASA-only) and not clearly real-time; doesn't meet "worldwide, all operators, frequently updated" requirement. | Ignore for v0.1 |
 
+| **[2026-09-14] Domain validation against real LL2 data (2.2.0), 6 live API calls** | `status.abbrev` only ever takes `Go`, `TBC`, `TBD`, `Success`, `Failure`, `Partial Failure` — there is no `Delayed`, `Scrubbed`, or `Launched` status value. Those events (confirmed via a launch with 27 `updates[]` entries) exist only as free-text human commentary ("Hold at T-8 minutes", "Scrubbed for the day"), never as structured fields, and there is no structured previous-NET history — only prose. `net` can be a placeholder (month/quarter-end date) rather than a real timestamp when `net_precision` is coarse (`Month`/`Quarter`); it must never be read without its precision. `mission` is a mission-level aggregate (description/type/orbit/agencies) with no itemised payload list even for confirmed multi-payload rideshares (e.g. Transporter 18) — LL2 does not expose structured per-payload data at the free tier. `launch_service_provider` (operator) and `mission.agencies` (payload-owning customer, e.g. NRO on a SpaceX launch) are confirmed as genuinely distinct fields. Vehicle is evidenced as 3 layers, not 1: abstract configuration/family, individually serial-numbered physical booster (own flight history, reuse count), and that booster's launch-specific usage (reused flag, flight number, turnaround days) — the last of these is launch-event-specific data, not vehicle data. `pad` (own operator/agency_id) and `location`/Site (geography, `timezone_name`) are confirmed as genuinely separate objects; timezone lives on Site, not Pad. In a random 30-launch upcoming sample, 5 of 6 "Unknown Payload" launches were Chinese (LandSpace, Orienspace, CASC ×3, ExPace) — direct confirmation, not speculation, of the opaque-coverage risk. | Materially changes the previously assumed `planned/confirmed/delayed/scrubbed/launched/success/failure` status model (§1 constraints) and the six-entity domain hypothesis (§1) — see Decision Required in this experiment's output for the specific corrections proposed. | Use — supersedes prior assumptions about status shape and payload structure |
+
 **Current knowledge gaps:**
 - Exact production rate limit for a paid/patron tier of Launch Library 2, and whether that scales to LaunchCity's expected traffic (not yet measured — no traffic exists yet).
-- Completeness of non-US/non-Western launch coverage (e.g. China, Iran, North Korea, smaller/classified national programs) in Launch Library 2 — historically inconsistent for opaque state programs; needs spot-checking once integration begins.
 - Whether Launch Library 2's "database dump"/paid options exist for bulk historical import (relevant if we later want a canonical local store rather than live pass-through).
+- Whether a scrub-and-relaunch always keeps the same LL2 launch `id`, or can spawn a new record — only one longitudinal example was tested.
+- Whether Mission can legitimately outlive a failed Launch Event (e.g. reflown payload) — no example encountered in validation.
+- Whether any rideshare mission ever gets an itemised payload manifest in LL2 outside the free `detailed` mode tested.
 
 ---
 
@@ -130,6 +136,8 @@ Only include material risks.
 | Coverage gaps for opaque/state launch programs (data may be genuinely unknown, provisional, or classified at the source) | LaunchCity could present a false sense of completeness ("we track worldwide launches") when some national programs are inherently under-covered by any public source | Explicitly design the UI/data model to represent "unknown/unconfirmed" rather than omitting or guessing; do not claim exhaustive worldwide coverage in product copy | — |
 | Attribution/reuse terms are informal ("encouraged, not mandatory"; "don't forward without adding value") rather than a written open license | Ambiguity about exactly what reuse is permitted if LaunchCity's usage grows commercial or high-traffic | Attribute The Space Devs visibly as a courtesy regardless of requirement; revisit formal terms directly with them before any commercial/paid product tier | — |
 | Building a canonical local database of historical launches now, before the launch-state model is validated | Early schema/identifier choices are the least reversible part of this project per existing Reversibility assessment; a wrong model compounds as records accumulate | Defer canonical storage design until the minimum entity model (below) is validated against real API responses; start with a thin cache, not a canonical store | — |
+| Building LaunchCity's status/lifecycle model directly around a "planned/confirmed/delayed/scrubbed/launched" enum, assuming Launch Library 2 exposes it that way | It doesn't — real data shows only Go/TBC/TBD/Success/Failure/Partial Failure; "delayed"/"scrubbed" only exist as free-text commentary. Building UI or storage around the assumed enum would silently fail to represent real events (scrubs, holds) at all | LaunchCity must treat scheduling-confidence and outcome as two separate fields, and must derive/record delay & scrub events itself (e.g. by diffing `net`/`status` between polls) — LL2 will not supply this after the fact | — |
+| Modelling Payload as a structured, itemised entity (one row per satellite) before implementation, based on the untested v0.1 hypothesis | Real rideshare/classified examples (Transporter 18, NROL-97) show LL2 exposes only a mission-level aggregate, never a payload manifest — building storage for itemised payloads now would model data the primary source doesn't provide | Defer a structured Payload entity; represent payload information as descriptive text on Mission for v0.1 | — |
 
 **Time/lifecycle concerns:**
 Launch status changes continuously and unpredictably (delays/scrubs can happen minutes before a window). Any caching layer needs a refresh cadence short enough to catch pre-launch status changes without exceeding rate limits — likely a shorter poll interval as a launch's window approaches, rather than one fixed global interval.
@@ -172,6 +180,16 @@ Only capture something likely to improve a future decision.
 **Candidate type:** Decision
 **Future relevance:** Relevant to any future project needing a live, frequently-changing, worldwide external dataset with a volunteer-maintained free API — the "don't call upstream live per-request, cache from day one regardless of DB decision" lesson generalizes.
 
+### Learning record
+
+**Date:** 2026-09-14
+**What happened:** Validated the provisional six-entity domain hypothesis against real Launch Library 2 data (6 live API calls covering upcoming/historical/TBD/delayed/failed/rideshare/classified/non-US launches).
+**What we expected:** That the six candidate concepts (Launch Event, Mission, Vehicle, Provider, Payload, Site/Pad) would broadly hold up, needing only minor field-level adjustment; and that upstream `status` would roughly match the planned/confirmed/delayed/scrubbed/launched/success/failure model.
+**What we learned:** Payload does not hold up as a structured entity — LL2 exposes only mission-level aggregates with no itemised manifest, even for confirmed rideshares. Vehicle is actually three layers (configuration, individual booster, this-launch usage), not one. Upstream `status` is far coarser than assumed (no Delayed/Scrubbed/Launched values exist) — those must be derived and recorded by LaunchCity itself, since upstream gives no structured reschedule history, only free-text commentary. Assuming an API's documented "roughly matches our concepts" is not the same as confirming it against actual response payloads — several assumptions that looked reasonable from documentation alone did not survive contact with real data.
+**Reusable beyond this project?** Yes
+**Candidate type:** Pattern
+**Future relevance:** Before adopting any external API's implied data model, validate a deliberately varied sample of real responses (edge cases: uncertain/missing data, failure states, multi-item cases, least-complete-coverage cases) rather than inferring the model from documentation or a handful of "happy path" examples.
+
 ---
 
 ## Project OS Experiment Log
@@ -180,3 +198,4 @@ Only capture something likely to improve a future decision.
 |---|---|---|---|---|---|
 | 2026-09-14 | Project OS v0.1 Experiment 001 | Decide LaunchCity data/source strategy before any implementation | Yes | None | See sections 2 and 3 above; full investigation and recommendation delivered in conversation |
 | 2026-09-14 | Project OS v0.1 Experiment 001 — Decision Recorded | Record approved data strategy decision and provisional domain hypothesis; correct overstated claim about schema independence guaranteeing an integration-only provider swap | Yes | None | Approved: LL2 as sole source, API + local cache, provider treated as replaceable, no adoption of LL2 JSON as domain contract. Six domain concepts marked provisional, not an approved schema. Persistent schema, canonical store, identifier strategy, state model, aggregation and backfill remain undecided. |
+| 2026-09-14 | Project OS v0.1 Experiment 001 — Domain Validation | Validate the provisional six-entity domain hypothesis against 6 live Launch Library 2 API calls spanning 10 deliberately varied real launch cases (upcoming/historical, commercial/government, TBD, delayed, failed/partial-failure, rideshare, classified, non-US) | Yes | None | Payload dropped as a v0.1 structured entity (mission-level aggregate only, no manifest data available). Vehicle confirmed as 3 layers; only configuration/family needed for v0.1. Status model corrected: upstream exposes Go/TBC/TBD/Success/Failure/Partial Failure only — no Delayed/Scrubbed/Launched; LaunchCity must derive and record these itself. No structured reschedule history available upstream — must be captured by LaunchCity from day one. Full findings in conversation; §1/§2/§3 amended accordingly. |
