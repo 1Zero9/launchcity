@@ -13,6 +13,15 @@
   --lc-accent-soft: rgba(255, 176, 102, 0.16);
   --lc-focus: #ffd9ad;
 
+  /* Cool horizon signature - atmospheric/geometric identity (the horizon
+     line, its glow, NEXT's attachment to it). Kept deliberately separate
+     from --lc-accent, which stays warm and is reserved for temporal/status
+     meaning (next-launch label, confidence, staleness) - two colours with
+     two distinct jobs, not a competing palette. */
+  --lc-horizon: #7dd3fc;
+  --lc-horizon-soft: rgba(125, 211, 252, 0.14);
+  --lc-horizon-glow: rgba(125, 211, 252, 0.26);
+
   --lc-space-1: 0.5rem;
   --lc-space-2: 1rem;
   --lc-space-3: 1.75rem;

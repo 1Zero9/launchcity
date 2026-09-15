@@ -31,41 +31,65 @@ export function HorizonTimeline({
 
   return (
     <section className={styles.horizon} aria-label="Launch timeline">
-      <ol className={styles.sequence}>
-        {before.map((launch, index) => (
-          <SequenceItem
-            key={launch.sourceId}
-            launch={launch}
-            variant="past"
-            distance={before.length - index}
-          />
-        ))}
+      <div className={styles.sequenceWrap}>
+        <div className={styles.horizonArc} aria-hidden="true">
+          <svg
+            className={styles.horizonArcSvg}
+            viewBox="0 0 200 36"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="horizonLineGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="var(--lc-fg-faint)" stopOpacity="0" />
+                <stop offset="18%" stopColor="var(--lc-fg-faint)" />
+                <stop offset="50%" stopColor="var(--lc-horizon)" />
+                <stop offset="82%" stopColor="var(--lc-fg-faint)" />
+                <stop offset="100%" stopColor="var(--lc-fg-faint)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d="M4,30 Q100,4 196,30" className={styles.horizonGlowPath} />
+            <path d="M4,30 Q100,4 196,30" className={styles.horizonLinePath} />
+          </svg>
+        </div>
 
-        {dominant ? (
-          <li className={styles.dominantItem} aria-current="true">
-            <Link
-              href={`/launch/${dominant.sourceId}`}
-              className={styles.dominantLink}
-              aria-label={`View details for ${orUnknown(dominant.name)}`}
-            >
-              <DominantLaunch launch={dominant} />
-            </Link>
-            <span className={styles.dominantMarker} aria-hidden="true" />
-          </li>
-        ) : (
-          <li className={styles.dominantItem} aria-current="true">
-            <div className={styles.dominant}>
-              <p className={styles.dominantEyebrow}>Next launch</p>
-              <p className={styles.dominantName}>No upcoming launch information available</p>
-            </div>
-            <span className={styles.dominantMarker} aria-hidden="true" />
-          </li>
-        )}
+        <ol className={styles.sequence}>
+          {before.map((launch, index) => (
+            <SequenceItem
+              key={launch.sourceId}
+              launch={launch}
+              variant="past"
+              distance={before.length - index}
+            />
+          ))}
 
-        {after.map((launch, index) => (
-          <SequenceItem key={launch.sourceId} launch={launch} variant="future" distance={index + 1} />
-        ))}
-      </ol>
+          {dominant ? (
+            <li className={styles.dominantItem} aria-current="true">
+              <Link
+                href={`/launch/${dominant.sourceId}`}
+                className={styles.dominantLink}
+                aria-label={`View details for ${orUnknown(dominant.name)}`}
+              >
+                <DominantLaunch launch={dominant} />
+              </Link>
+              <span className={styles.dominantConnector} aria-hidden="true" />
+              <span className={styles.dominantMarker} aria-hidden="true" />
+            </li>
+          ) : (
+            <li className={styles.dominantItem} aria-current="true">
+              <div className={styles.dominant}>
+                <p className={styles.dominantEyebrow}>Next launch</p>
+                <p className={styles.dominantName}>No upcoming launch information available</p>
+              </div>
+              <span className={styles.dominantConnector} aria-hidden="true" />
+              <span className={styles.dominantMarker} aria-hidden="true" />
+            </li>
+          )}
+
+          {after.map((launch, index) => (
+            <SequenceItem key={launch.sourceId} launch={launch} variant="future" distance={index + 1} />
+          ))}
+        </ol>
+      </div>
 
       <p className={freshness === "stale" ? `${styles.freshness} ${styles.stale}` : styles.freshness}>
         {describeFreshness(lastSuccessfulRefresh)}

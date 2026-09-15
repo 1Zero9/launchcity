@@ -6,6 +6,10 @@
   padding: var(--lc-space-3) var(--lc-space-2);
 }
 
+.sequenceWrap {
+  position: relative;
+}
+
 .sequence {
   position: relative;
   list-style: none;
@@ -14,29 +18,55 @@
   flex-wrap: nowrap;
   align-items: flex-end; /* every item's bottom edge shares one line - the rail */
   gap: clamp(0.5rem, 2vw, 2rem);
+  /* Atmosphere: a soft cool glow low in the row, at the horizon itself,
+     fading out well before it reaches any item's text - restrained, no
+     hard edge. Desktop only (see mobile override below). */
+  background: radial-gradient(ellipse 70% 140% at 50% 100%, var(--lc-horizon-soft), transparent 70%);
 }
 
-/* The rail - a single restrained line every marker's bottom edge rests on.
-   Brightest under the dominant launch, fading toward the edges: the light
-   reads as originating from "next", not as a decoration laid over the top. */
-.sequence::after {
-  content: "";
+/* The horizon - a shallow curve, not a divider line. Purely decorative
+   (aria-hidden, no pointer-events, sized against the wrapper rather than
+   the flex row so it never influences flex sizing); markers are lifted to
+   visually sit on it via transform only, so real layout/click targets
+   never move. */
+.horizonArc {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+
+.horizonArcSvg {
   position: absolute;
   left: 0;
-  right: 0;
   bottom: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--lc-fg-faint) 20%,
-    var(--lc-accent) 50%,
-    var(--lc-fg-faint) 80%,
-    transparent
-  );
-  opacity: 0.7;
-  z-index: -1;
-  pointer-events: none;
+  width: 100%;
+  height: 2.25rem;
+  overflow: visible;
+}
+
+.horizonGlowPath {
+  fill: none;
+  stroke: var(--lc-horizon);
+  stroke-width: 6;
+  opacity: 0.2;
+  filter: blur(4px);
+}
+
+.horizonLinePath {
+  fill: none;
+  stroke: url(#horizonLineGradient);
+  stroke-width: 1;
+  opacity: 0.85;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (max-width: 640px) {
+  .horizonArc {
+    display: none; /* mobile keeps the frozen straight side-rail, not the curve */
+  }
 }
 
 .pastItem,
@@ -52,14 +82,30 @@
   flex: 1 1 0;
   min-width: 0;
   text-align: center;
-  /* Restrained recession from "next": scale only, never colour/contrast. */
+  /* Restrained recession from "next": scale, plus a small sink toward the
+     horizon's edges (never colour/contrast) - the whole item leans into
+     the curve, not just its marker. */
   opacity: calc(1 - var(--distance, 1) * 0.08);
-  transform: scale(calc(1 - var(--distance, 1) * 0.045));
+  transform: scale(calc(1 - var(--distance, 1) * 0.045)) translateY(calc(var(--distance, 1) * 0.15rem));
   transform-origin: bottom center;
 }
 
 .itemContent {
   min-width: 0;
+}
+
+/* A faint tick tying each secondary item's text to its marker - the same
+   idea as the dominant connector, scaled down and fading with distance so
+   items further from "next" read as receding along the horizon rather
+   than as an equal column floating above it. */
+.itemConnector {
+  display: block;
+  width: 1px;
+  height: calc(0.85rem / (var(--distance, 1) + 0.4));
+  margin: 0.3rem auto 0;
+  background: linear-gradient(to bottom, transparent, var(--lc-fg-faint));
+  opacity: calc(1 - (var(--distance, 1) - 1) * 0.18);
+  flex-shrink: 0;
 }
 
 /* Real interaction targets now that Launch Detail exists - kept quiet by
@@ -102,15 +148,20 @@
   color: var(--lc-fg-muted);
 }
 
-/* Markers - the visual attachment point between a launch and the rail. */
+/* Markers - the visual attachment point between a launch and the rail.
+   Lifted upward (transform only, layout untouched) so each one visually
+   rests on the curved horizon rather than a flat line - the lift is a
+   function of --distance (set per item in SequenceItem), so it degrades
+   gracefully for however many items the sequence actually has. */
 .marker {
   display: block;
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
   background: var(--lc-fg-muted);
-  margin-top: 0.875rem;
+  margin-top: 0.25rem;
   flex-shrink: 0;
+  transform: translateY(calc(-1.4rem / (var(--distance, 1) + 0.6)));
 }
 
 .dominantMarker {
@@ -118,24 +169,43 @@
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  background: var(--lc-accent);
-  margin-top: 1.25rem;
+  /* Selected-event geometry, not status - cool horizon colour, matching
+     the arc it sits on, not the warm temporal/status accent used above it. */
+  background: var(--lc-horizon);
+  margin-top: 0;
   flex-shrink: 0;
+  transform: translateY(-1.5rem);
   box-shadow:
-    0 0 0.5rem 0.125rem var(--lc-accent-soft),
-    0 0 1.75rem 0.5rem var(--lc-accent-soft);
+    0 0 0.5rem 0.125rem var(--lc-horizon-glow),
+    0 0 1.75rem 0.5rem var(--lc-horizon-soft);
+}
+
+/* The connection: a light stem between the dominant text and its marker,
+   making NEXT read as physically attached to the horizon. Placed in
+   normal flow (a real flex child, not absolutely positioned), so it sits
+   after however many lines the name wrapped to - never overlaps text.
+   Long and slow to fade rather than a solid beam - light travelling down
+   to the horizon, not a rod connecting two points. */
+.dominantConnector {
+  display: block;
+  width: 2px;
+  height: 2.5rem;
+  margin: 0.5rem auto 0;
+  background: linear-gradient(to bottom, transparent 0%, var(--lc-horizon-soft) 40%, var(--lc-horizon) 100%);
+  box-shadow: 0 0 0.6rem var(--lc-horizon-soft);
+  flex-shrink: 0;
 }
 
 .dominantItem {
   position: relative;
-  flex: 2.5 1 0;
+  flex: 3 1 0;
   min-width: 0;
   padding: 0 var(--lc-space-1);
 }
 
 .dominant {
   position: relative;
-  max-width: 40rem;
+  max-width: 54rem;
   min-width: 0;
   text-align: center;
   padding: var(--lc-space-2) var(--lc-space-2) 0;
@@ -143,17 +213,19 @@
 
 /* The glow originates near the marker (the horizon point itself), not the
    middle of the text block - light rises from "next", rather than sitting
-   behind it. */
+   behind it. `closest-side` sizing guarantees the gradient reaches true
+   transparent at the box's own edge, whatever that box's size or aspect
+   ratio - no visible rectangular boundary, on any viewport. */
 .dominantItem::before {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -1rem;
+  bottom: 0.5rem;
   width: 34rem;
   max-width: 90vw;
   height: 18rem;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at center bottom, var(--lc-accent-soft), transparent 70%);
+  background: radial-gradient(ellipse closest-side at center bottom, var(--lc-horizon-soft) 0%, transparent 100%);
   z-index: -1;
   pointer-events: none;
 }
@@ -225,11 +297,15 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--lc-space-3);
+    /* The desktop bottom-anchored atmosphere doesn't suit a tall column -
+       mobile atmosphere comes from the dominant marker's own glow instead. */
+    background: none;
   }
 
   .sequence::after {
     /* vertical rail - centred through the marker column (marker width
-       0.625rem, so its centre sits at half that from the left edge) */
+       0.625rem, so its centre sits at half that from the left edge).
+       Cool horizon colour, same signature as desktop's curve. */
     left: 0.3125rem;
     right: auto;
     top: 0.4rem;
@@ -240,7 +316,7 @@
       to bottom,
       transparent,
       var(--lc-fg-faint) 12%,
-      var(--lc-accent) 50%,
+      var(--lc-horizon) 50%,
       var(--lc-fg-faint) 88%,
       transparent
     );
@@ -267,7 +343,8 @@
 
   /* Equal marker size on mobile so both sit centred on the same rail
      column - the dominant marker stays "strongest" via colour/glow and
-     the dramatically larger adjacent type, not extra size here. */
+     the dramatically larger adjacent type, not extra size here. The
+     desktop curve-lift transform doesn't apply to a straight rail. */
   .marker,
   .dominantMarker {
     order: -1;
@@ -275,7 +352,20 @@
     height: 0.625rem;
     margin-top: 0.4rem;
     flex: 0 0 auto;
+    transform: none;
     box-shadow: none;
+  }
+
+  /* NEXT still reads as attached to the horizon on mobile - via a modest
+     glow on its own marker rather than the desktop stem (which assumes a
+     text-above/marker-below layout mobile doesn't use). */
+  .dominantMarker {
+    box-shadow: 0 0 0.5rem 0.1875rem var(--lc-horizon-glow);
+  }
+
+  .dominantConnector,
+  .itemConnector {
+    display: none; /* both assume a text-above/marker-below layout mobile doesn't use */
   }
 
   .dominant {
@@ -287,12 +377,18 @@
     justify-content: flex-start;
   }
 
+  /* Concentrated tightly on the marker itself (near the top of the
+     dominant block, not its vertical centre) rather than spanning the
+     whole card down past SITE - small enough, and closest-side sized
+     (inherited from the base rule), that it never produces a visible
+     rectangular edge. */
   .dominantItem::before {
     left: 0.3125rem;
     bottom: auto;
-    top: 50%;
+    top: 0.7rem;
     transform: translate(-50%, -50%);
-    width: 14rem;
-    height: 14rem;
+    width: 9rem;
+    height: 9rem;
+    background: radial-gradient(ellipse closest-side at center, var(--lc-horizon-soft) 0%, transparent 100%);
   }
 }

@@ -47,6 +47,7 @@ export function SequenceItem({
           <p className={styles.sequenceStatus}>{status}</p>
         </div>
       </Link>
+      <span className={styles.itemConnector} aria-hidden="true" />
       <span className={styles.marker} aria-hidden="true" />
     </li>
   );
