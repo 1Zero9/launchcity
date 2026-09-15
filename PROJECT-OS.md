@@ -259,6 +259,37 @@ Run to determine whether the frozen product direction has now been translated in
 
 **What visual design must not change:** the two-surface structure; the dominant/secondary/detail-on-demand tiers and their field assignments; the navigation model (no added menus, tabs, accounts, filters, search); the negative experience boundary (no stats/news/maps/charts/AI/social/notifications/favourites/dense tables); the honesty rules around uncertainty and freshness.
 
+### v0.1 Release Scope & Stop — Final — 2026-09-15
+
+Run to decide whether LaunchCity v0.1 ships, challenging specifically whether the previously observed Launch Detail tonal-transition opportunity (Detail's palette predates the Horizon visual-fidelity recovery and does not share its cool/warm atmospheric signature) is a release blocker.
+
+**Finding:** It is not. No frozen product promise, experience architecture rule, or visual-direction rule (§1) requires Launch Detail to visually match Horizon's atmospheric signature — Detail's freeze criteria (identity-dominant, progressive disclosure, honest state handling, no cards/tabs/database navigation) are all independently met. An opportunity for improvement is not sufficient reason to reopen a frozen surface.
+
+**v0.1 RELEASE DECISION: SHIP**
+
+**RELEASE BLOCKERS**
+- None.
+
+**KNOWN LIMITATIONS**
+- Anonymous LL2 rate-limit/freshness behaviour (observed live in production as a real 429; handled as designed — cache preserved, `/diagnostics` honest, never fabricated).
+- Fixed ~15-minute refresh cadence, not proximity-aware.
+- Currently accepted Launch Detail validation gaps (no real `Success` fixture visually validated; no real non-null `mission.description` prose visually validated; "Unknown Pad" copy not yet refined; no webcast section, correctly omitted per contract).
+- UTC time presentation (not converted to viewer-local time) — a deliberate scope choice, not a technical limitation.
+
+**POST-v0.1 OPPORTUNITIES** (not roadmap commitments)
+- Launch Detail tonal transition to match Horizon's recovered atmospheric signature.
+- Proximity-aware polling near launch windows.
+- LaunchCity identity/icon (currently text wordmark + default favicon).
+- Multi-source aggregation, canonical historical store, deeper domain capabilities (booster-instance tracking, structured payload manifests).
+
+**LAUNCH DETAIL: KEEP FROZEN.**
+
+**HORIZON: KEEP FROZEN.**
+
+**BRAKE: ON TRACK.**
+
+No post-v0.1 opportunity listed above is authorised as v0.1 work. No further v0.1 product work is authorised following this decision.
+
 ---
 
 ## 5. Learning
@@ -395,6 +426,52 @@ Only capture something likely to improve a future decision.
 
 ---
 
+## 6. Experiment 001 Closure — 2026-09-15
+
+### Hypothesis
+
+That a lightweight, evidence-driven decision process (Project OS v0.1) — intake, relevant-knowledge capture, risk/failure naming, explicit Scope & Stop checks at each phase boundary, and a learning record — would let LaunchCity reach a shipped v0.1 with a validated data strategy, domain boundary, architecture, product direction, experience architecture, and visual direction, while avoiding both under-analysis (shipping on unvalidated assumptions) and over-analysis (re-litigating decisions the evidence already answered).
+
+### Outcome
+
+**SUPPORTED**
+
+Every phase (data strategy → domain validation → architecture → product direction → experience architecture → visual direction → both surfaces) was frozen only after real evidence (live LL2 calls, real browser screenshots, real production deploys, a real 429, a real successful KV write) and shipped without a single blocking unknown remaining. Three separate points where a plausible reason to reopen a frozen surface appeared (Launch Detail's mission/payload field duplication, the Horizon concept-render fidelity gap, and this closure's Launch Detail tonal-transition challenge) were each resolved by checking the frozen requirement's own language rather than reopening — the mechanism did what it was built to do. The one qualification: it did not prevent one real instance of unnecessary work from a local/remote evidence misread (see Mistakes below).
+
+### Project OS Value
+
+- Domain validation (6 live LL2 calls) reversed two assumptions before any schema was built — Payload does not survive as a structured entity, and upstream `status` has no Delayed/Scrubbed/Launched values — avoiding a costly wrong data model per the project's own "less reversible once records accumulate" assessment.
+- Real-browser validation requirements caught two structural layout bugs (desktop flex-wrap breaking the horizon row; a missing wrapper div in the empty-state fallback) that passing `tsc`/`eslint`/build did not surface.
+- The Horizon visual-fidelity check against the actual concept render (not a text description) caught HIGH drift from the direction's defining perceptual signature that full structural/product compliance had completely masked.
+- Repeated Scope & Stop checks correctly declined to reopen frozen surfaces for the Launch Detail contract-duplication question, the Horizon fidelity gap (contained to a two-pass visual-only recovery, not a redesign), and now the Detail tonal-transition question — each time by testing against the actual frozen requirement rather than against a more polished hypothetical.
+
+### Project OS Cost
+
+- The "production cache path fix" (commit `47955d4`) was implemented, tested, committed, and deployed based on evidence (a local Miniflare KV read mistaken for production) that was later found incorrect — independently-justified hardening, but work generated by a process misstep, not by a real defect.
+
+### Failures / Mistakes
+
+- **Local Miniflare evidence incorrectly interpreted as production evidence:** `wrangler kv key get`/`key list` run without `--remote` returned local dev/test state that was recorded and acted on as proof of a production KV snapshot; the real production KV had never had a `launches` key at that point. Corrected only after the resulting fix still didn't change production behaviour.
+- **Unnecessary production cache-path work resulting from that misinterpretation:** the memoization-removal/fail-loud change was built and shipped to address a symptom the misread evidence implied, not the symptom's real cause (an LL2 429 on a specific cron cycle).
+- **Visual direction frozen textually without retaining the actual reference artefact:** the Horizon direction was described and frozen in words; only a later, separate review against the actual concept render image revealed that textual compliance had diverged from the render's real perceptual identity. The gap was invisible from the written freeze record alone.
+
+### Process Risks Observed
+
+- **Framework/process expansion becoming its own form of drift:** the effort spent on Cloudflare KV forensics (local-vs-remote investigation, log instrumentation, a code change) grew directly out of trusting process-generated evidence over verifying against the actual deployed target — process activity is not inherently equivalent to progress.
+- **Scope & Stop is stronger against known scope than unknown omissions:** the missing LaunchCity icon/favicon survived 6+ freeze cycles, including an entire visual-direction phase, without being flagged by any Scope & Stop check — it took a direct question to surface it. The same structural blind spot is why the Launch Detail tonal-transition question needed an explicit challenge in this closure rather than being caught by a routine check.
+- **Risk of confusing additional polish with defect correction:** the Launch Detail tonal-transition observation and the Horizon fidelity gap both had the surface appearance of a defect; only checking them against the actual frozen requirement (not "would this look better") kept the former correctly classified as an opportunity while the latter correctly justified a scoped recovery.
+- **Risk of excessive evidence gathering when sufficient evidence already exists:** not concretely evidenced in this project's log — every Scope & Stop check that ran found the existing evidence sufficient to freeze and explicitly declined further research (domain, architecture, product direction, experience architecture all record this reasoning). Named here as a risk to watch for in future experiments, not one observed in Experiment 001.
+
+### Evidence Worth Retaining
+
+- Operational evidence must state whether it represents local emulation or the deployed remote environment before being used to justify a code change (2026-09-15 Learning Record).
+- Compare a frozen visual/creative direction against the actual original artefact, not a memory or text summary of it, before concluding fidelity holds (2026-09-15 Learning Record).
+- A rich, validated data model does not obligate a rich UI; testing a minimal surface count against real state variation is sufficient confirmation on its own (2026-09-14 Learning Record).
+- Before adopting any external API's implied data model, validate a deliberately varied real sample rather than inferring from documentation (2026-09-14 Learning Record).
+- None of the above is promoted into a Project OS framework rule by this closure. Framework changes are deferred to a separate review, per this closure's explicit instruction not to modify Project OS itself.
+
+---
+
 ## Project OS Experiment Log
 
 | Date | Capability | Why invoked | Material change? | Friction | Notes |
@@ -420,3 +497,5 @@ Only capture something likely to improve a future decision.
 | 2026-09-15 | Production cache path fix (superseded diagnosis) | Fix the hypothesized HTTP-vs-scheduled cache-binding mismatch based on the (later-found-incorrect) evidence above | Yes | Low | `lib/cache/index.ts`: removed `getCacheStore()`'s module-scope memoization; added fail-loud behaviour instead of silently falling back to `FileCache` when a Cloudflare/OpenNext process resolves but has no `LAUNCHES_KV` binding. 7 new tests (43 total), tests/typecheck/lint/Next build/OpenNext Cloudflare build all pass. Committed (`47955d4`), pushed, deployed to the existing Worker (same KV namespace/cron/secrets/bindings, no new resources). Independently-justified hardening; did not fix the reported symptom - see corrected Learning Record. |
 | 2026-09-15 | Production Scheduled Refresh Investigation | Determine why production's real (`--remote`) KV has never received a `scheduled()`-written snapshot, after the local/remote KV evidence correction | Yes | Low | Enabled Workers Logs (Observability) via metadata-only API call; observed one natural `*/15` Cron invocation live. Root cause of that invocation's failure: LL2 429 rate limit on `fetchUpcoming()`, captured verbatim, `fetchPrevious()`/KV write never reached (by design). Separately confirmed via `--remote` that production KV now genuinely holds a real 50-launch snapshot from a different, earlier, successful cron cycle (`lastSuccessfulRefresh: 2026-09-15T10:30:20.176Z`) - the architecture does work end-to-end when LL2 doesn't reject the request. No code/config/deploy changes made. Full report in conversation. |
 | 2026-09-15 | Horizon Visual Fidelity Review + Recovery — FREEZE | Compare the implemented Horizon against the actual approved concept render (visual-fidelity, not product/experience); if drift found, recover the smallest set of visual changes that restore identity | Yes | Low | Found HIGH drift (flat line, zero atmosphere, warm-only accent, no NEXT-to-horizon connection) despite full structural/product compliance. Two-pass recovery, both against real cached data (long/wrapped names, Unknown Payload): (1) native CSS/SVG curved horizon, cool-signature atmospheric glow, NEXT connector, warm/cool colour-role separation; (2) real-screenshot-driven corrections - wider dominant block, stronger NEXT connector, distance-scaled secondary-item connectors, and a mobile gradient-boundary fix (`radial-gradient` `closest-side` vs default `farthest-corner` sizing). `app/globals.css`, `components/timeline/HorizonTimeline.tsx`, `components/timeline/HorizonTimeline.module.css`, `components/timeline/SequenceItem.tsx`. Tests/typecheck/lint/Next build/OpenNext Cloudflare build all pass throughout. Decision: FREEZE HORIZON VISUAL IMPLEMENTATION - accepted production interpretation of the approved direction, not required to reproduce the render pixel-for-pixel. Product Direction and Experience Architecture never reopened. §1 amended. |
+| 2026-09-15 | Project OS v0.1 Final Scope & Stop / Release Gate | Run the final release-readiness review; explicitly challenge whether the Launch Detail tonal-transition opportunity is a release blocker | Yes | None | Decision: v0.1 RELEASE DECISION — SHIP. No release blockers found. Launch Detail tonal-transition opportunity classified as POST-v0.1, not a blocker — no frozen rule requires it. Launch Detail and Horizon both KEEP FROZEN. Brake: ON TRACK. Documentation-only; no code/CSS/behaviour change, no LL2 call, no refresh, no KV write, no deploy. §4 amended. |
+| 2026-09-15 | Project OS Experiment 001 — Closure | Close Experiment 001: record hypothesis outcome, Project OS value/cost, mistakes, process risks, and evidence worth retaining, without modifying the Project OS framework itself | Yes | None | Outcome: SUPPORTED. §6 added recording value (domain-validation reversals, real-browser bug catches, Horizon fidelity-gap detection, correct non-reopening decisions), cost (the superseded production cache-path fix), mistakes (local-vs-remote KV misread and the resulting unnecessary fix; visual direction frozen textually without retaining the reference artefact), and process risks (process activity mistaken for progress; Scope & Stop weaker against unknown omissions; polish vs. defect confusion; excessive-evidence risk named but not observed). No framework capabilities, agents, skills, Council, Brake automation, templates, rules, Eolas, or v0.2 work introduced, per explicit instruction. Documentation-only. |
