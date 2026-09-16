@@ -139,13 +139,16 @@ export function isUsableImageUrl(value: unknown): value is string {
  */
 export function mapImage(raw: unknown): LaunchImage | null {
   if (isUsableImageUrl(raw)) {
-    return { url: raw, credit: null, source: "ll2" };
+    // A bare URL string carries nothing to compare against a vehicle's
+    // generic stock image, so classification is honestly "unknown" - see
+    // lib/contract.ts's LaunchImage doc comment.
+    return { url: raw, credit: null, source: "ll2", classification: "unknown" };
   }
   const o = obj(raw);
   if (!o) return null;
   const url = o.image_url ?? o.url;
   if (!isUsableImageUrl(url)) return null;
-  return { url, credit: str(o.credit) ?? str(o.name), source: "ll2" };
+  return { url, credit: str(o.credit) ?? str(o.name), source: "ll2", classification: "unknown" };
 }
 
 function mapMission(raw: unknown): Mission | null {

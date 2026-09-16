@@ -3,6 +3,7 @@ import type { CacheFreshness } from "@/lib/cache";
 import type { LaunchSequence } from "@/lib/timeline";
 import { describeFreshness } from "@/lib/timeFormat";
 import { orUnknown } from "@/lib/text";
+import { LaunchImage } from "@/components/media/LaunchImage";
 import { DominantLaunch } from "./DominantLaunch";
 import { SequenceItem } from "./SequenceItem";
 import styles from "./HorizonTimeline.module.css";
@@ -17,6 +18,15 @@ import styles from "./HorizonTimeline.module.css";
  * Every item ends in a marker (span, aria-hidden) that sits on a shared
  * rail line - the markers and the rail are the horizon; both are purely
  * decorative attachments to the real information in the <ol> itself.
+ *
+ * REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+ * the whole sequence now sits inside a `.heroPanel` - a cinematic backdrop
+ * (the dominant launch's image, when present, or the existing atmospheric
+ * gradient/star-field fallback when it isn't) shared by the dominant text
+ * and the timeline rail together, following Panel C ("The Horizon") of the
+ * founder's original visual concept. This replaces Experiment 007's small
+ * image strip, which sat above plain page background rather than being
+ * structurally part of the Horizon.
  */
 export function HorizonTimeline({
   sequence,
@@ -31,73 +41,83 @@ export function HorizonTimeline({
 
   return (
     <section className={styles.horizon} aria-label="Launch timeline">
-      <div className={styles.sequenceWrap}>
-        <div className={styles.horizonArc} aria-hidden="true">
-          <svg
-            className={styles.horizonArcSvg}
-            viewBox="0 0 200 36"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="horizonLineGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="var(--lc-fg-faint)" stopOpacity="0" />
-                <stop offset="18%" stopColor="var(--lc-fg-faint)" />
-                <stop offset="50%" stopColor="var(--lc-horizon)" />
-                <stop offset="82%" stopColor="var(--lc-fg-faint)" />
-                <stop offset="100%" stopColor="var(--lc-fg-faint)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path d="M4,30 Q100,4 196,30" className={styles.horizonGlowPath} />
-            <path d="M4,30 Q100,4 196,30" className={styles.horizonLinePath} />
-          </svg>
+      <div className={styles.heroPanel}>
+        {/* Bounded separately from .heroPanel itself: on mobile the panel
+            grows tall (past + dominant + future stack in one column), but
+            the backdrop image must not stretch across that whole scrolling
+            length - see .heroBackdropBounds's mobile override. */}
+        <div className={styles.heroBackdropBounds}>
+          {dominant && <LaunchImage image={dominant.image} variant="hero" />}
         </div>
 
-        <ol className={styles.sequence}>
-          {before.map((launch, index) => (
-            <SequenceItem
-              key={launch.sourceId}
-              launch={launch}
-              variant="past"
-              distance={before.length - index}
-            />
-          ))}
+        <div className={styles.sequenceWrap}>
+          <div className={styles.horizonArc} aria-hidden="true">
+            <svg
+              className={styles.horizonArcSvg}
+              viewBox="0 0 200 36"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="horizonLineGradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="var(--lc-fg-faint)" stopOpacity="0" />
+                  <stop offset="18%" stopColor="var(--lc-fg-faint)" />
+                  <stop offset="50%" stopColor="var(--lc-horizon)" />
+                  <stop offset="82%" stopColor="var(--lc-fg-faint)" />
+                  <stop offset="100%" stopColor="var(--lc-fg-faint)" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d="M4,30 Q100,4 196,30" className={styles.horizonGlowPath} />
+              <path d="M4,30 Q100,4 196,30" className={styles.horizonLinePath} />
+            </svg>
+          </div>
 
-          {dominant ? (
-            <li className={styles.dominantItem} aria-current="true">
-              <Link
-                href={`/launch/${dominant.sourceId}`}
-                className={styles.dominantLink}
-                aria-label={`View details for ${orUnknown(dominant.name)}`}
-              >
-                <DominantLaunch launch={dominant} />
-              </Link>
-              <span className={styles.dominantConnector} aria-hidden="true" />
-              <span className={styles.dominantMarker} aria-hidden="true" />
-            </li>
-          ) : (
-            <li className={styles.dominantItem} aria-current="true">
-              <div className={styles.dominant}>
-                <p className={styles.dominantEyebrow}>Next launch</p>
-                <p className={styles.dominantName}>No upcoming launch information available</p>
-              </div>
-              <span className={styles.dominantConnector} aria-hidden="true" />
-              <span className={styles.dominantMarker} aria-hidden="true" />
-            </li>
-          )}
+          <ol className={styles.sequence}>
+            {before.map((launch, index) => (
+              <SequenceItem
+                key={launch.sourceId}
+                launch={launch}
+                variant="past"
+                distance={before.length - index}
+              />
+            ))}
 
-          {/* Overdue unresolved launches (2026-09-16 correction) - shown
-              honestly, at the same visual weight as other secondary items,
-              never as a confident "next launch." Placed immediately after
-              the dominant item since chronologically they are closest to
-              "now". */}
-          {overdue.map((launch) => (
-            <SequenceItem key={launch.sourceId} launch={launch} variant="overdue" distance={1} />
-          ))}
+            {dominant ? (
+              <li className={styles.dominantItem} aria-current="true">
+                <Link
+                  href={`/launch/${dominant.sourceId}`}
+                  className={styles.dominantLink}
+                  aria-label={`View details for ${orUnknown(dominant.name)}`}
+                >
+                  <DominantLaunch launch={dominant} />
+                </Link>
+                <span className={styles.dominantConnector} aria-hidden="true" />
+                <span className={styles.dominantMarker} aria-hidden="true" />
+              </li>
+            ) : (
+              <li className={styles.dominantItem} aria-current="true">
+                <div className={styles.dominant}>
+                  <p className={styles.dominantEyebrow}>Next launch</p>
+                  <p className={styles.dominantName}>No upcoming launch information available</p>
+                </div>
+                <span className={styles.dominantConnector} aria-hidden="true" />
+                <span className={styles.dominantMarker} aria-hidden="true" />
+              </li>
+            )}
 
-          {after.map((launch, index) => (
-            <SequenceItem key={launch.sourceId} launch={launch} variant="future" distance={index + 1} />
-          ))}
-        </ol>
+            {/* Overdue unresolved launches (2026-09-16 correction) - shown
+                honestly, at the same visual weight as other secondary items,
+                never as a confident "next launch." Placed immediately after
+                the dominant item since chronologically they are closest to
+                "now". */}
+            {overdue.map((launch) => (
+              <SequenceItem key={launch.sourceId} launch={launch} variant="overdue" distance={1} />
+            ))}
+
+            {after.map((launch, index) => (
+              <SequenceItem key={launch.sourceId} launch={launch} variant="future" distance={index + 1} />
+            ))}
+          </ol>
+        </div>
       </div>
 
       <p className={freshness === "stale" ? `${styles.freshness} ${styles.stale}` : styles.freshness}>

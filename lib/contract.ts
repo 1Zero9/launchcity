@@ -75,17 +75,24 @@ export interface Pad {
  *
  * CORRECTED 2026-09-16 (docs/corrections/2026-09-16-launchcity-correctness-pass.md):
  * LL2's real detailed responses DO contain a top-level `image` field (a
- * bare URL string) - the 2026-09-16 imagery experiment's premise that "no
- * real LL2 response has ever contained an image" was based on trimmed
- * fixtures, not a genuine absence. Because the source, licensing and
- * attribution treatment for that real LL2 image data have not been
- * founder-approved, the adapter (`lib/ll2/adapter.ts`) no longer maps LL2's
- * `image` field into this contract in production - `normalizeLaunch()`
- * always produces `image: null` today, regardless of what LL2 sends. This
- * type and the `LaunchImage`/`mapImage` machinery are retained, tested and
- * ready to re-enable once that approval exists - see Experiment 007
- * (`docs/experiments/007-launchcity-imagery-visual-proof.md`), which
- * remains reproducible against this type.
+ * bare URL string on the integrated 2.2.0 API version) - the 2026-09-16
+ * imagery experiment's premise that "no real LL2 response has ever
+ * contained an image" was based on trimmed fixtures, not a genuine
+ * absence. Because the source, licensing and attribution treatment for
+ * that real LL2 image data have not been founder-approved, the adapter
+ * (`lib/ll2/adapter.ts`) no longer maps LL2's `image` field into this
+ * contract in production - `normalizeLaunch()` always produces
+ * `image: null` today, regardless of what LL2 sends. This type and the
+ * `LaunchImage`/`mapImage` machinery are retained, tested and ready to
+ * re-enable once that approval exists.
+ *
+ * REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+ * imagery is now an ACCEPTED product direction (Panel C, "The Horizon") -
+ * see PROJECT-OS.md §7. Production activation remains a separate,
+ * unresolved decision: LL2 2.3.0's development endpoint shows a
+ * structured image object (name, credit, licence, single_use) that 2.2.0
+ * does not, and licence status is "Unknown" for most sampled images even
+ * there - see that experiment record for the full evidence.
  */
 export interface LaunchImage {
   url: string;
@@ -93,6 +100,17 @@ export interface LaunchImage {
   credit: string | null;
   /** Where this image came from, for provenance - "ll2" is the only production source. */
   source: "ll2";
+  /**
+   * Honest classification of what this image actually depicts, so the UI
+   * never claims more than the evidence supports (2026-09-16 Horizon
+   * restoration). "launch" - evidence indicates the image is specific to
+   * this launch (its URL differs from the vehicle's generic stock image).
+   * "vehicle" - the image is the vehicle's generic stock photo, not
+   * specific to this launch. "unknown" - classification could not be
+   * determined (e.g. mapped from a bare URL string alone, with nothing to
+   * compare it against) - the honest default.
+   */
+  classification: "launch" | "vehicle" | "unknown";
 }
 
 export interface Mission {

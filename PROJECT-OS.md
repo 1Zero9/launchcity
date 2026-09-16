@@ -530,3 +530,25 @@ Every phase (data strategy → domain validation → architecture → product di
 ### Project OS learning candidate (recorded here, not adopted into the v0.1 framework)
 
 Decision records require an explicit status: EXPERIMENT, PROVISIONAL, ACCEPTED, FROZEN, SUPERSEDED, REJECTED, DEFERRED, PAUSED, or UNCLEAR. Implementation and repeated documentation do not, by themselves, convert an experiment into an accepted decision — a status change requires founder approval, supporting evidence, or an explicit decision event. This is a candidate for Project OS v0.2 and is not a change to Project OS v0.1 or to the Project OS framework repository.
+
+---
+
+## 8. Founder Decision — Original Horizon Visual Concept — 2026-09-16
+
+**Status: FOUNDER DECISION — ACTIVE.** Direct founder correction to §7's imagery direction. Full detail: `docs/experiments/008-original-horizon-restoration.md`.
+
+**Founder's words, recorded verbatim:** "LaunchCity should use imagery as shown in the original Horizon concept, Panel C of the Three Visions of Tomorrow. Imagery is part of the intended product, not optional decoration."
+
+**Visual source of truth:** `docs/evidence/product-intent/launchcity-three-visions.png`, **Panel C ("THE HORIZON") only** — not Panel A ("The Launch Board") or Panel B ("The Space Almanac"). Intended qualities, per the reference itself: atmospheric, cinematic, forward-looking, anticipation, scale, movement, wonder.
+
+**Imagery as a product direction: ACCEPTED.** Superseding §7's more cautious "provisional restrained strip" framing (Experiment 007) — that experiment is recorded as evidence of a first proof attempt, not the visual target.
+
+**Panel C as the visual reference: ACCEPTED.**
+
+**Exact implementation: PROVISIONAL pending founder visual review** of `docs/experiments/008-original-horizon-restoration.md` and its screenshots. Nothing in this entry approves the specific pixels built — only the direction and reference.
+
+**Production image source, licence and attribution handling: still unresolved.** See the experiment record's evidence section. `normalizeLaunch().image` remains disabled; nothing in this entry reconnects real LL2 data to production refreshes.
+
+**Secondary launches remain image-free**, unchanged from §7.
+
+**Not deployed as a result of this entry.**

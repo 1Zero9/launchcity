@@ -10,6 +10,16 @@
   padding: var(--lc-space-3) var(--lc-space-2) var(--lc-space-5);
 }
 
+/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+   wider on desktop specifically to make room for a large image
+   participating alongside the text (Panel C's lower-right Detail
+   treatment), not a conventional narrow single-column article. */
+@media (min-width: 641px) {
+  .detail {
+    max-width: 68rem;
+  }
+}
+
 .back {
   display: inline-block;
   font-size: 0.875rem;
@@ -20,6 +30,73 @@
 .back:hover,
 .back:focus-visible {
   color: var(--lc-fg-secondary);
+}
+
+/* Mobile default: plain document flow, DOM order only - identity, then
+   image, then mission/launch/outcome/provenance. Desktop (below)
+   reassigns each child to a named grid area, independent of DOM order,
+   so the image can occupy one tall column beside the text. */
+.layout {
+  display: block;
+  min-width: 0;
+}
+
+/* The fallback atmosphere lives here (not only inside LaunchImage's own
+   frame) so an absent image still leaves a deliberate, star-field-adjacent
+   presence in this column - never an empty box - matching the same
+   proportions and hierarchy whether or not a real image exists. */
+.areaMedia {
+  position: relative;
+  margin: var(--lc-space-3) 0 var(--lc-space-4);
+  aspect-ratio: 4 / 3;
+  min-width: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: radial-gradient(ellipse 90% 140% at 50% 100%, var(--lc-horizon-soft), var(--lc-bg) 75%);
+}
+
+@media (min-width: 641px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    grid-template-areas:
+      "identity media"
+      "mission media"
+      "launch media"
+      "outcome media"
+      "provenance media";
+    column-gap: var(--lc-space-5);
+    align-items: start;
+  }
+
+  .areaIdentity {
+    grid-area: identity;
+  }
+
+  .areaMedia {
+    grid-area: media;
+    margin: 0;
+    aspect-ratio: auto;
+    height: 100%;
+    min-height: 24rem;
+    align-self: stretch;
+  }
+
+  .areaMission {
+    grid-area: mission;
+  }
+
+  .areaLaunch {
+    grid-area: launch;
+  }
+
+  .areaOutcome {
+    grid-area: outcome;
+  }
+
+  .areaProvenance {
+    grid-area: provenance;
+  }
 }
 
 .identity {

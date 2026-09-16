@@ -57,90 +57,102 @@ export function LaunchDetail({
         ← Back to horizon
       </Link>
 
-      <LaunchImage image={launch.image} variant="detail" />
+      {/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+          a CSS grid (see LaunchDetail.module.css's .layout) places these
+          sections into named areas - a large image participating
+          alongside the text on desktop (Panel C's lower-right Detail
+          treatment), while mobile falls back to plain source order:
+          identity, then image, then mission/launch/outcome/provenance -
+          identity stays visible first, and the image never pushes the
+          rest of the content out of reach. */}
+      <div className={styles.layout}>
+        <section className={`${styles.identity} ${styles.areaIdentity}`}>
+          <span className={styles.marker} aria-hidden="true" />
+          <p className={styles.eyebrow}>{flown ? "Completed launch" : "Upcoming launch"}</p>
+          <h1 className={styles.name}>{orUnknown(launch.name)}</h1>
 
-      <section className={styles.identity}>
-        <span className={styles.marker} aria-hidden="true" />
-        <p className={styles.eyebrow}>{flown ? "Completed launch" : "Upcoming launch"}</p>
-        <h1 className={styles.name}>{orUnknown(launch.name)}</h1>
-
-        {flown ? (
-          <p className={styles.outcome}>
-            {describeOutcome(launch.outcome)}
-            <span className={styles.subtle}> · {describePastLaunchDate(launch.time)}</span>
-          </p>
-        ) : overdue && !launch.liveStatus ? (
-          // Overdue and not a known live state (Hold/In Flight already have
-          // their own honest liveStatus note, which takes priority - see
-          // `confidence` above) - honest "awaiting update" language, never
-          // a confidently-scheduled future time.
-          <p className={styles.time}>{describeOverdueLaunch(launch.time)}</p>
-        ) : (
-          <p className={styles.time}>
-            {describeLaunchTime(launch.time, launch.schedulingConfidence)}
-            {confidence && <span className={styles.confidence}> · {confidence}</span>}
-          </p>
-        )}
-      </section>
-
-      {missionHasContent && (
-        <section className={styles.section}>
-          <h2 className={styles.heading}>Mission</h2>
-          {mission?.description && <p className={styles.body}>{mission.description}</p>}
-          {(mission?.type || mission?.orbit) && (
-            <dl className={styles.facts}>
-              {mission?.type && (
-                <div>
-                  <dt>Mission type</dt>
-                  <dd>{mission.type}</dd>
-                </div>
-              )}
-              {mission?.orbit && (
-                <div>
-                  <dt>Orbit</dt>
-                  <dd>{humanizeUnknown(mission.orbit)}</dd>
-                </div>
-              )}
-            </dl>
+          {flown ? (
+            <p className={styles.outcome}>
+              {describeOutcome(launch.outcome)}
+              <span className={styles.subtle}> · {describePastLaunchDate(launch.time)}</span>
+            </p>
+          ) : overdue && !launch.liveStatus ? (
+            // Overdue and not a known live state (Hold/In Flight already have
+            // their own honest liveStatus note, which takes priority - see
+            // `confidence` above) - honest "awaiting update" language, never
+            // a confidently-scheduled future time.
+            <p className={styles.time}>{describeOverdueLaunch(launch.time)}</p>
+          ) : (
+            <p className={styles.time}>
+              {describeLaunchTime(launch.time, launch.schedulingConfidence)}
+              {confidence && <span className={styles.confidence}> · {confidence}</span>}
+            </p>
           )}
         </section>
-      )}
 
-      <section className={styles.section}>
-        <h2 className={styles.heading}>Launch</h2>
-        <dl className={styles.facts}>
-          <div>
-            <dt>Provider</dt>
-            <dd>
-              {orUnknown(launch.provider?.name)}
-              {launch.provider?.type && <span className={styles.subtle}> · {launch.provider.type}</span>}
-            </dd>
-          </div>
-          <div>
-            <dt>Vehicle</dt>
-            <dd>
-              {orUnknown(launch.vehicle?.name)}
-              {vehicleFamily && <span className={styles.subtle}> · {vehicleFamily} family</span>}
-            </dd>
-          </div>
-          <div>
-            <dt>Site</dt>
-            <dd>{location || "Unknown"}</dd>
-          </div>
-        </dl>
-      </section>
+        <div className={styles.areaMedia}>
+          <LaunchImage image={launch.image} variant="detail" />
+        </div>
 
-      {flown && launch.outcomeDetail && (
-        <section className={styles.section}>
-          <h2 className={styles.heading}>Outcome</h2>
-          <p className={styles.body}>{launch.outcomeDetail}</p>
+        {missionHasContent && (
+          <section className={`${styles.section} ${styles.areaMission}`}>
+            <h2 className={styles.heading}>Mission</h2>
+            {mission?.description && <p className={styles.body}>{mission.description}</p>}
+            {(mission?.type || mission?.orbit) && (
+              <dl className={styles.facts}>
+                {mission?.type && (
+                  <div>
+                    <dt>Mission type</dt>
+                    <dd>{mission.type}</dd>
+                  </div>
+                )}
+                {mission?.orbit && (
+                  <div>
+                    <dt>Orbit</dt>
+                    <dd>{humanizeUnknown(mission.orbit)}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+          </section>
+        )}
+
+        <section className={`${styles.section} ${styles.areaLaunch}`}>
+          <h2 className={styles.heading}>Launch</h2>
+          <dl className={styles.facts}>
+            <div>
+              <dt>Provider</dt>
+              <dd>
+                {orUnknown(launch.provider?.name)}
+                {launch.provider?.type && <span className={styles.subtle}> · {launch.provider.type}</span>}
+              </dd>
+            </div>
+            <div>
+              <dt>Vehicle</dt>
+              <dd>
+                {orUnknown(launch.vehicle?.name)}
+                {vehicleFamily && <span className={styles.subtle}> · {vehicleFamily} family</span>}
+              </dd>
+            </div>
+            <div>
+              <dt>Site</dt>
+              <dd>{location || "Unknown"}</dd>
+            </div>
+          </dl>
         </section>
-      )}
 
-      <p className={styles.provenance}>
-        Source: Launch Library 2 · {describeFreshness(lastSuccessfulRefresh)}
-        {freshness === "stale" && " (showing the last known data)"}
-      </p>
+        {flown && launch.outcomeDetail && (
+          <section className={`${styles.section} ${styles.areaOutcome}`}>
+            <h2 className={styles.heading}>Outcome</h2>
+            <p className={styles.body}>{launch.outcomeDetail}</p>
+          </section>
+        )}
+
+        <p className={`${styles.provenance} ${styles.areaProvenance}`}>
+          Source: Launch Library 2 · {describeFreshness(lastSuccessfulRefresh)}
+          {freshness === "stale" && " (showing the last known data)"}
+        </p>
+      </div>
     </article>
   );
 }

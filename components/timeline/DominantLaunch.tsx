@@ -1,13 +1,19 @@
 import type { NormalizedLaunch } from "@/lib/contract";
 import { describeConfidence, describeLaunchTime } from "@/lib/timeFormat";
 import { orUnknown } from "@/lib/text";
-import { LaunchImage } from "@/components/media/LaunchImage";
 import styles from "./HorizonTimeline.module.css";
 
 /**
  * The single most important thing on the page: what is the next launch.
  * Every field here is in the frozen "visible immediately" tier - nothing
  * more, nothing less.
+ *
+ * REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+ * this component is now text-only - the dominant launch's image (when
+ * present) is rendered once, as a full-bleed backdrop, by the parent
+ * HorizonTimeline, not nested inside this block. That matches Panel C
+ * ("The Horizon"): the image is the hero's shared backdrop, not a strip
+ * attached to just the dominant item.
  */
 export function DominantLaunch({ launch }: { launch: NormalizedLaunch }) {
   // Live-status language (Hold/In Flight - 2026-09-16 correction) takes
@@ -18,7 +24,6 @@ export function DominantLaunch({ launch }: { launch: NormalizedLaunch }) {
 
   return (
     <div className={styles.dominant}>
-      <LaunchImage image={launch.image} variant="dominant" />
       <p className={styles.dominantEyebrow}>Next launch</p>
       <h1 className={styles.dominantName}>{orUnknown(launch.name)}</h1>
       <p className={styles.dominantTime}>

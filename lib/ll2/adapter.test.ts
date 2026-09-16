@@ -129,7 +129,15 @@ test("isUsableImageUrl accepts well-formed absolute http(s) URLs only", () => {
 // Tested directly since normalizeLaunch() no longer calls it.
 test("mapImage: a real-shaped LL2 image as a bare string URL maps to a usable image with no invented credit", () => {
   const image = mapImage("https://ll2.example/photo.jpg");
-  assert.deepEqual(image, { url: "https://ll2.example/photo.jpg", credit: null, source: "ll2" });
+  assert.deepEqual(image, {
+    url: "https://ll2.example/photo.jpg",
+    credit: null,
+    source: "ll2",
+    // A bare string carries nothing to compare against a vehicle's
+    // generic stock image, so classification is honestly "unknown" -
+    // see docs/experiments/008-original-horizon-restoration.md.
+    classification: "unknown",
+  });
 });
 
 test("mapImage: the actual real captured image URL maps correctly", () => {
@@ -137,6 +145,7 @@ test("mapImage: the actual real captured image URL maps correctly", () => {
   const image = mapImage(raw.image);
   assert.equal(image?.url, raw.image);
   assert.equal(image?.source, "ll2");
+  assert.equal(image?.classification, "unknown");
 });
 
 test("mapImage: an object with image_url/credit maps honestly", () => {
@@ -145,6 +154,7 @@ test("mapImage: an object with image_url/credit maps honestly", () => {
     url: "https://ll2.example/photo.jpg",
     credit: "Example Photographer",
     source: "ll2",
+    classification: "unknown",
   });
 });
 

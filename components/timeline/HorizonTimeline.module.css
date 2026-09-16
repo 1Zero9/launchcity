@@ -9,8 +9,46 @@
   padding: var(--lc-space-3) var(--lc-space-2);
 }
 
+/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+   the cinematic backdrop (the dominant launch's real image, or the
+   existing atmospheric gradient/star-field when none exists) and the
+   timeline rail now share one continuous dark surface - Panel C ("The
+   Horizon") of the founder's original visual concept, not a small image
+   strip sitting above plain page background. `isolation: isolate` keeps
+   the backdrop/scrim/content z-index layering local to this panel. */
+.heroPanel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1.25rem;
+  /* Star-field-adjacent fallback atmosphere, always present under the
+     real image (while it loads) and instead of it (when there isn't
+     one) - never a flat, empty background. */
+  background:
+    radial-gradient(1px 1px at 12% 22%, rgba(245, 247, 250, 0.5), transparent),
+    radial-gradient(1px 1px at 68% 12%, rgba(245, 247, 250, 0.35), transparent),
+    radial-gradient(1px 1px at 82% 38%, rgba(245, 247, 250, 0.4), transparent),
+    radial-gradient(1px 1px at 34% 48%, rgba(245, 247, 250, 0.3), transparent),
+    radial-gradient(1px 1px at 55% 8%, rgba(245, 247, 250, 0.3), transparent),
+    linear-gradient(180deg, #050810 0%, var(--lc-bg) 70%, var(--lc-bg) 100%);
+  padding-top: var(--lc-space-4);
+}
+
 .sequenceWrap {
   position: relative;
+  z-index: 1;
+  padding: 0 var(--lc-space-3) var(--lc-space-3);
+}
+
+/* Desktop: fills the whole panel (LaunchImage's own .heroFrame is
+   position:absolute;inset:0 relative to this). Mobile override below
+   bounds it to a fixed zone at the top instead - the panel itself grows
+   tall on mobile (the sequence becomes one long column), and a backdrop
+   stretched across that entire length would crop badly and collide with
+   list text far below the actual hero content. */
+.heroBackdropBounds {
+  position: absolute;
+  inset: 0;
 }
 
 .sequence {
@@ -206,12 +244,30 @@
   padding: 0 var(--lc-space-1);
 }
 
+/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+   left-aligned, over the shared hero backdrop - Panel C ("The Horizon")
+   shows the dominant launch's name/time/facts set against the cinematic
+   image rather than centred on flat background. */
 .dominant {
   position: relative;
-  max-width: 54rem;
+  max-width: 34rem;
   min-width: 0;
-  text-align: center;
-  padding: var(--lc-space-2) var(--lc-space-2) 0;
+  text-align: left;
+  padding: var(--lc-space-2) var(--lc-space-2) 0 0;
+}
+
+/* A local contrast scrim sized to the text block itself (not the whole
+   panel) - guarantees legibility against whatever the shared backdrop
+   happens to show, regardless of exactly where this column falls in the
+   row. Independent of .heroMask's broader atmospheric shaping. */
+.dominant::before {
+  content: "";
+  position: absolute;
+  inset: -1rem -1.5rem -0.5rem -1rem;
+  z-index: -1;
+  border-radius: 1rem;
+  background: radial-gradient(ellipse 100% 100% at 30% 40%, rgba(5, 8, 16, 0.7) 0%, rgba(5, 8, 16, 0.42) 60%, transparent 100%);
+  pointer-events: none;
 }
 
 /* The glow originates near the marker (the horizon point itself), not the
@@ -229,7 +285,7 @@
   height: 18rem;
   transform: translateX(-50%);
   background: radial-gradient(ellipse closest-side at center bottom, var(--lc-horizon-soft) 0%, transparent 100%);
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
 }
 
@@ -240,6 +296,7 @@
   text-transform: uppercase;
   color: var(--lc-accent);
   margin-bottom: var(--lc-space-1);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .dominantName {
@@ -248,12 +305,14 @@
   line-height: 1.1;
   color: var(--lc-fg);
   letter-spacing: -0.01em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
 .dominantTime {
   margin-top: var(--lc-space-1);
   font-size: clamp(1.0625rem, 2.4vw, 1.375rem);
   color: var(--lc-fg-secondary);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
 .confidence {
@@ -264,7 +323,7 @@
   margin-top: var(--lc-space-3);
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--lc-space-3);
 }
 
@@ -296,6 +355,25 @@
 /* Mobile: the rail moves to one side of the content instead of through its
    centre - PAST (top) -> NEXT -> FUTURE (bottom), read top to bottom. */
 @media (max-width: 640px) {
+  .heroPanel {
+    padding-top: var(--lc-space-2);
+    border-radius: 0.875rem;
+  }
+
+  /* Bounded to a fixed zone at the top of the panel, not the whole
+     (potentially very tall, once past+dominant+future all stack in one
+     column) panel height - prevents the backdrop image and its caption
+     from stretching down into and colliding with list content far below
+     the actual hero area. */
+  .heroBackdropBounds {
+    inset: 0 0 auto 0;
+    height: 22rem;
+  }
+
+  .sequenceWrap {
+    padding: 0 var(--lc-space-2) var(--lc-space-2);
+  }
+
   .sequence {
     flex-direction: column;
     align-items: stretch;
@@ -337,6 +415,31 @@
     opacity: 1;
     transform: none;
     gap: 1rem;
+  }
+
+  /* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+     the dominant launch must appear within the first meaningful mobile
+     viewport, not below several recent launches - visual order only
+     (`order`), so DOM/reading order for assistive technology still
+     follows the real past -> next -> future sequence. `.futureItem` also
+     covers overdue items (SequenceItem.tsx reuses that class), so they
+     correctly stay grouped with "future" position, after the dominant
+     launch. */
+  .dominantItem {
+    order: -1;
+    /* Clears the bounded backdrop zone (.heroBackdropBounds, 22rem) before
+       normal-flow content (past items) begins below it - otherwise the
+       image's own caption can collide with the first list item's text. */
+    min-height: 22rem;
+    padding-bottom: var(--lc-space-2);
+  }
+
+  .pastItem {
+    order: 1;
+  }
+
+  .futureItem {
+    order: 2;
   }
 
   .itemContent {

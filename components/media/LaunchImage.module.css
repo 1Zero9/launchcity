@@ -1,66 +1,74 @@
-/* Shared "fall back cleanly" base: every frame carries the same
+/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
+   `hero` replaces the old `dominant` strip - a full-bleed cinematic
+   backdrop, not a small bounded image above text - following Panel C
+   ("The Horizon") of the founder's original visual concept. `detail` is
+   reworked to participate in Launch Detail's composition (a large image
+   alongside the text) rather than sitting inside a conventional 16:9
+   card. Both frames still carry the same "fall back cleanly" base: the
    atmospheric gradient LaunchCity already uses when no image exists at
    all, so a failed/blocked image load reveals that gradient instead of a
-   broken image icon or empty box - see LaunchImage.tsx's onError handling.
-   The frame's height is fixed by aspect-ratio *before* any image loads, so
-   there is no layout shift once one does or doesn't. */
-.dominantFrame,
+   broken image icon or empty box. */
+
+.heroFrame,
 .detailFrame {
   position: relative;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
   overflow: hidden;
   background: radial-gradient(ellipse 90% 140% at 50% 100%, var(--lc-horizon-soft), var(--lc-bg) 75%);
 }
 
-.dominantFrame {
-  max-width: 54rem;
-  aspect-ratio: 3 / 1;
-  max-height: 14rem;
-  margin: 0 auto var(--lc-space-2);
-  border-radius: 0.75rem;
+/* Full-bleed backdrop - fills its positioned ancestor (HorizonTimeline's
+   .heroPanel), sitting behind the dominant text and timeline rail, not a
+   bounded box above them. */
+.heroFrame {
+  position: absolute;
+  inset: 0;
 }
 
-.dominantImg {
+.heroImg {
   width: 100%;
-  max-width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 40%;
+  object-position: center 32%;
   display: block;
 }
 
-/* Restrained: fades the image into the page background at its own edges,
-   never into the text below it - the dominant text stack sits below this
-   frame, not overlaid on top of the photograph, so legibility never
-   depends on where a particular image happens to be light or dark. */
-.dominantMask {
+/* Strongest on the left (where the dominant text sits) and at the bottom
+   (where the timeline rail sits), fading toward transparent on the right
+   so the cinematic image still reads clearly there - the same left-text /
+   right-image balance Panel C uses, achieved as a backdrop rather than a
+   separate column. */
+.heroMask {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 55%, var(--lc-bg) 100%),
-    linear-gradient(to right, var(--lc-bg) 0%, transparent 10%, transparent 90%, var(--lc-bg) 100%);
+  background:
+    linear-gradient(90deg, var(--lc-bg) 0%, rgba(10, 14, 23, 0.88) 26%, rgba(10, 14, 23, 0.4) 48%, transparent 72%),
+    linear-gradient(180deg, rgba(10, 14, 23, 0.25) 0%, transparent 30%, transparent 55%, var(--lc-bg) 100%);
   pointer-events: none;
 }
 
+/* Large, integrated: fills its grid column on desktop (see
+   LaunchDetail.module.css), not a fixed-height card with padding around
+   it - the image participates in the composition. */
 .detailFrame {
-  aspect-ratio: 16 / 9;
-  margin-bottom: var(--lc-space-3);
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
   border-radius: 0.75rem;
 }
 
 .detailImg {
   width: 100%;
-  max-width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 30%;
   display: block;
 }
 
 .detailMask {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(10, 14, 23, 0.85) 0%, transparent 45%);
+  background: linear-gradient(180deg, rgba(10, 14, 23, 0.15) 0%, transparent 35%, transparent 65%, rgba(10, 14, 23, 0.65) 100%),
+    linear-gradient(90deg, rgba(10, 14, 23, 0.55) 0%, transparent 22%);
   pointer-events: none;
 }
 
@@ -72,12 +80,5 @@
   font-size: 0.6875rem;
   color: var(--lc-fg-secondary);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
-
-@media (max-width: 640px) {
-  .dominantFrame {
-    aspect-ratio: 16 / 9;
-    max-height: none;
-    margin-bottom: var(--lc-space-2);
-  }
+  z-index: 1;
 }
