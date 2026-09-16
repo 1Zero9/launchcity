@@ -16,7 +16,12 @@ const BASE_URL = process.env.LL2_BASE_URL ?? "https://ll.thespacedevs.com/2.2.0"
 const API_TOKEN = process.env.LL2_API_TOKEN;
 
 export class LL2RequestError extends Error {
-  constructor(message: string, readonly status?: number) {
+  constructor(
+    message: string,
+    readonly status?: number,
+    /** Raw `Retry-After` header value, if the upstream response sent one. */
+    readonly retryAfter?: string | null,
+  ) {
     super(message);
     this.name = "LL2RequestError";
   }
@@ -35,7 +40,11 @@ async function getJson(path: string): Promise<LL2ListResponse> {
 
   const res = await fetch(`${BASE_URL}${path}`, { headers });
   if (!res.ok) {
-    throw new LL2RequestError(`LL2 request failed: ${res.status} ${res.statusText} (${path})`, res.status);
+    throw new LL2RequestError(
+      `LL2 request failed: ${res.status} ${res.statusText} (${path})`,
+      res.status,
+      res.headers.get("retry-after"),
+    );
   }
 
   const body = (await res.json()) as unknown;
