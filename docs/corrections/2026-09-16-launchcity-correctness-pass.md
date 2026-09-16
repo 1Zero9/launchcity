@@ -54,4 +54,14 @@ The existing `overflow-x: hidden` on `html, body` (pre-existing, not added by th
 
 ## Deployment status
 
-**Not deployed.** No Cloudflare, KV, Cron, secret, or paid-service state was read or changed by this pass (all reproduction used the local Miniflare KV emulation `next dev` already uses, and it was restored to its pre-existing content before finishing). This work is committed and pushed to `main` only; it remains pending founder review before any deployment.
+**Deployed 2026-09-16T21:23Z**, commit `c55ac6f`, via the repository's standard `npm run cf:deploy`.
+
+- Previous Worker version: `c81b5f54-7e04-4ea0-9a72-65d18ba7ef76` (commit `8bf8fc1`).
+- New Worker version: `888be793-73dc-41c7-b8ad-9ce30bf75668`, confirmed at 100% traffic.
+- Handlers (`fetch`, `scheduled`), bindings (`LAUNCHES_KV`, `WORKER_SELF_REFERENCE`, `ASSETS`), the `REFRESH_SECRET` secret, and the Cron schedule (`*/15 * * * *`) are all unchanged from the pre-deployment baseline - confirmed by direct comparison of `wrangler versions view` output before and after, and by the deploy command's own output.
+- `/`, `/diagnostics`, a real Launch Detail, and a fake Launch Detail all returned their expected status codes immediately after deployment.
+- No `<img>` element is present anywhere in production - imagery remains inactive, as designed.
+- Deployment does not rewrite KV: the pre-existing stale snapshot (`lastSuccessfulRefresh: 2026-09-16T20:00:38.116Z`) and its raw duplicate `sourceId` records are still present post-deploy, and the Horizon still visibly shows two duplicate entries. This is expected - `dedupeLaunches()` runs at refresh time, not render time - and will resolve on the next successful scheduled refresh, not before.
+- No natural Cron cycle was observed during the immediate post-deployment verification window; none was awaited.
+- No regression condition was met; no rollback was performed.
+- Imagery remains **PROVISIONAL**. This deployment does not change, accept, revise, or reject that status.
