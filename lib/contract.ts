@@ -64,6 +64,29 @@ export interface Pad {
   name: string | null;
 }
 
+/**
+ * An authentic, source-attributed image for this launch. Optional and
+ * additive - old cached snapshots written before this field existed will
+ * simply parse with `image: undefined`, which every consumer must treat
+ * identically to `null` (see lib/timeline.ts / components). Never populate
+ * this with an invented URL, a stock/placeholder image, or an image that
+ * does not genuinely depict the specific launch/vehicle/mission it is
+ * attached to - see PROJECT-OS.md 2026-09-16 founder correction.
+ *
+ * As of 2026-09-16, no real captured Launch Library 2 response (6 live
+ * calls across upcoming/previous/detailed modes) has ever contained an
+ * image field - this type and its adapter mapping exist so the contract is
+ * ready if/when LL2 exposes one, not because one has been observed. Until
+ * then this will be `null` for every real launch.
+ */
+export interface LaunchImage {
+  url: string;
+  /** Attribution text, shown honestly when present. Never invented when absent. */
+  credit: string | null;
+  /** Where this image came from, for provenance - "ll2" is the only production source. */
+  source: "ll2";
+}
+
 export interface Mission {
   sourceId: string | number | null;
   name: string | null;
@@ -99,4 +122,9 @@ export interface NormalizedLaunch {
   site: Site | null;
   pad: Pad | null;
   mission: Mission | null;
+  /**
+   * Optional and additive - see LaunchImage. Absent on every old cached
+   * snapshot; consumers must handle `undefined` the same as `null`.
+   */
+  image?: LaunchImage | null;
 }

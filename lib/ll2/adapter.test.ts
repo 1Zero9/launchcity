@@ -2,11 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { normalizeLaunch } from "./adapter";
+import { isUsableImageUrl, normalizeLaunch } from "./adapter";
 
-function fixture(name: string): unknown {
+function fixture(name: string): Record<string, unknown> {
   const raw = readFileSync(path.join(__dirname, "__fixtures__", name), "utf-8");
-  return JSON.parse(raw);
+  return JSON.parse(raw) as Record<string, unknown>;
 }
 
 // Scenario 1: LL2 responds normally, precise upcoming launch.
@@ -74,4 +74,53 @@ test("non-object input never throws", () => {
 test("timezone identifier is passed through as an IANA name, not converted", () => {
   const launch = normalizeLaunch(fixture("go-precise.json"));
   assert.match(launch.site?.timezone ?? "", /^[A-Za-z]+\/[A-Za-z_]+$/);
+});
+
+// Image mapping: as of 2026-09-16, no real captured fixture has ever
+// contained an image field - every real fixture must map to null, not
+// throw and not invent a value.
+test("no real captured fixture contains an image field - image maps to null for all of them", () => {
+  for (const name of [
+    "go-precise.json",
+    "tbd-placeholder.json",
+    "failure.json",
+    "partial-failure.json",
+    "classified-unknown.json",
+  ]) {
+    const launch = normalizeLaunch(fixture(name));
+    assert.equal(launch.image, null, `${name} should not have a fabricated image`);
+  }
+});
+
+test("isUsableImageUrl accepts well-formed absolute http(s) URLs only", () => {
+  assert.equal(isUsableImageUrl("https://example.com/photo.jpg"), true);
+  assert.equal(isUsableImageUrl("http://example.com/photo.jpg"), true);
+  assert.equal(isUsableImageUrl("javascript:alert(1)"), false);
+  assert.equal(isUsableImageUrl("data:image/png;base64,AAAA"), false);
+  assert.equal(isUsableImageUrl("/relative/path.jpg"), false);
+  assert.equal(isUsableImageUrl(""), false);
+  assert.equal(isUsableImageUrl(undefined), false);
+  assert.equal(isUsableImageUrl(123), false);
+});
+
+test("a hypothetical LL2 image as a bare string URL maps to a usable image with no invented credit", () => {
+  const launch = normalizeLaunch({ ...fixture("go-precise.json"), image: "https://ll2.example/photo.jpg" });
+  assert.deepEqual(launch.image, { url: "https://ll2.example/photo.jpg", credit: null, source: "ll2" });
+});
+
+test("a hypothetical LL2 image as an object with image_url/credit maps honestly", () => {
+  const launch = normalizeLaunch({
+    ...fixture("go-precise.json"),
+    image: { image_url: "https://ll2.example/photo.jpg", credit: "Example Photographer" },
+  });
+  assert.deepEqual(launch.image, {
+    url: "https://ll2.example/photo.jpg",
+    credit: "Example Photographer",
+    source: "ll2",
+  });
+});
+
+test("a malformed/unusable image URL from upstream maps to null rather than a broken <img>", () => {
+  const launch = normalizeLaunch({ ...fixture("go-precise.json"), image: "not a url" });
+  assert.equal(launch.image, null);
 });

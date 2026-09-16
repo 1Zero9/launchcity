@@ -1,4 +1,5 @@
 import type {
+  LaunchImage,
   LaunchOutcome,
   Mission,
   NormalizedLaunch,
@@ -81,6 +82,41 @@ function mapPad(raw: unknown): Pad | null {
   return { sourceId, name: str(o.name) };
 }
 
+/**
+ * A URL is only "usable" if it's a well-formed absolute http(s) URL - never
+ * throws on garbage input. Rejects anything else (relative paths, `javascript:`,
+ * data URIs, malformed strings) rather than passing it through to an <img src>.
+ */
+export function isUsableImageUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length === 0) return false;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Defensive image mapping - LL2 has never been observed (6 live calls, 0
+ * captured fixtures) to return an image field at all; this exists so the
+ * contract is ready if one appears, without inventing a shape upstream
+ * hasn't demonstrated. Handles the two shapes LL2's public schema could
+ * plausibly use (a bare URL string, or an object with an image_url/credit
+ * pair) without asserting either is correct - an invalid/unusable URL
+ * safely maps to `null`, never a broken <img>.
+ */
+function mapImage(raw: unknown): LaunchImage | null {
+  if (isUsableImageUrl(raw)) {
+    return { url: raw, credit: null, source: "ll2" };
+  }
+  const o = obj(raw);
+  if (!o) return null;
+  const url = o.image_url ?? o.url;
+  if (!isUsableImageUrl(url)) return null;
+  return { url, credit: str(o.credit) ?? str(o.name), source: "ll2" };
+}
+
 function mapMission(raw: unknown): Mission | null {
   const o = obj(raw);
   if (!o) return null;
@@ -131,5 +167,6 @@ export function normalizeLaunch(raw: unknown): NormalizedLaunch {
     site: mapSite(o.pad),
     pad: mapPad(o.pad),
     mission: mapMission(o.mission),
+    image: mapImage(o.image),
   };
 }

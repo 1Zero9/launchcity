@@ -1,6 +1,7 @@
 import type { NormalizedLaunch } from "@/lib/contract";
 import { describeConfidence, describeLaunchTime } from "@/lib/timeFormat";
 import { orUnknown } from "@/lib/text";
+import { LaunchImage } from "@/components/media/LaunchImage";
 import styles from "./HorizonTimeline.module.css";
 
 /**
@@ -13,6 +14,7 @@ export function DominantLaunch({ launch }: { launch: NormalizedLaunch }) {
 
   return (
     <div className={styles.dominant}>
+      <LaunchImage image={launch.image} variant="dominant" />
       <p className={styles.dominantEyebrow}>Next launch</p>
       <h1 className={styles.dominantName}>{orUnknown(launch.name)}</h1>
       <p className={styles.dominantTime}>

@@ -9,6 +9,7 @@ import {
   describePastLaunchDate,
 } from "@/lib/timeFormat";
 import { humanizeUnknown, orUnknown } from "@/lib/text";
+import { LaunchImage } from "@/components/media/LaunchImage";
 import styles from "./LaunchDetail.module.css";
 
 /**
@@ -45,6 +46,8 @@ export function LaunchDetail({
       <Link href="/" className={styles.back}>
         ← Back to horizon
       </Link>
+
+      <LaunchImage image={launch.image} variant="detail" />
 
       <section className={styles.identity}>
         <span className={styles.marker} aria-hidden="true" />
