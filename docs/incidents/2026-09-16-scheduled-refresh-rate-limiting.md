@@ -1,7 +1,7 @@
 # Incident: sustained production staleness from Launch Library 2 rate limiting
 
 **Date observed:** 2026-09-16
-**Status:** Corrective control implemented and validated locally (lint/typecheck/tests/build). Not yet deployed - see verification procedure below.
+**Status:** Corrective control implemented, deployed, and observed against one natural production cycle. 24-hour acceptance window closed early - see "Shortened acceptance window" below. Architecture decision reopened - see `docs/architecture/2026-09-16-refresh-platform-review.md`.
 
 ## Observed symptom
 
@@ -54,3 +54,21 @@ This control has not been deployed. Once it is (a separate, explicit deployment 
 ## Rollback condition
 
 If, after deployment, sustained staleness (multiple consecutive hours with no successful refresh) recurs despite the retry budget, that is evidence the root cause is **not** a single transient blip absorbable by one retry, and this control alone is insufficient. In that case: do not add further retries or a queue without first re-diagnosing (the shared-identity rate-limiting hypothesis would need direct confirmation, e.g. via an LL2 API token to test whether a distinct, non-shared identity clears the limit). Rolling back this specific change is low-risk - it only adds bounded retry behaviour around the existing call sequence - and can be done by reverting this commit; no data migration, KV schema, or Cloudflare configuration is affected by this change, so rollback carries no data-loss risk.
+
+## Deployment
+
+Deployed to production 2026-09-16T17:15Z (commit `8bf8fc12d996de68b82b047b75657d81256ae406`, Worker version `c81b5f54-7e04-4ea0-9a72-65d18ba7ef76`, superseding `7bc9a068-dc3a-4416-b0de-2e564e830256`). Pre- and post-deploy route checks (`/`, `/diagnostics`, a real and a fake `/launch/<id>`) all returned the expected status codes; the existing cached snapshot (50 launches, `lastSuccessfulRefresh 2026-09-16T07:45:31.821Z`) survived the deploy unmodified, as expected since a deploy never touches KV.
+
+## Shortened acceptance window
+
+The planned 24-hour unattended acceptance window was authorised to be closed early, because new evidence changed what remained to be tested.
+
+- **Window started:** `2026-09-16T17:31:29Z`
+- **Worker version observed:** `c81b5f54-7e04-4ea0-9a72-65d18ba7ef76`
+- One natural (not manually triggered) scheduled cycle was captured via read-only `wrangler tail` at `2026-09-16T17:30:27Z` (cron fire), `refresh_start` logged `17:30:35.616Z`:
+  - The retry mechanism **executed exactly as designed**: `upcoming` received an initial `429`, was classified transient, and one bounded retry was attempted (delay capped at `5000ms`, the configured `MAX_RETRY_DELAY_MS`).
+  - The **retry also received `429`**.
+  - The run correctly returned `ok: false` with no KV write; the **last-good snapshot remained fully intact** (`lastSuccessfulRefresh` unchanged at `2026-09-16T07:45:31.821Z`, launch count unchanged at 50).
+  - **Freshness was not restored** during this observed cycle - the underlying upstream condition was still active at the moment of observation.
+- **Why the wait was stopped:** continuing the full 24 hours would only have tested whether the *same* still-active upstream condition eventually clears on its own - i.e. it would test **persistence of the symptom**, not answer the actual open question, which is **whether the chosen execution environment (Cloudflare Workers' shared egress identity) is itself a structural contributor to the rate-limiting LaunchCity is experiencing**. That is an architecture question, not something more unattended waiting can resolve, so the window was closed early in favour of reopening the architecture decision (see `docs/architecture/2026-09-16-refresh-platform-review.md`).
+- **Result classification: technically safe correction, operational recovery not demonstrated.** The retry control behaved exactly to specification - no crash, no partial/invalid data, no sensitive data logged, no uncontrolled request volume - but it did not, in the one cycle observed, restore freshness. This is evidence the corrective control is *safe* but not yet evidence it is *sufficient* on its own if the underlying condition is structural rather than a brief blip.
