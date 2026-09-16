@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getCacheStore, freshnessOf, STALE_AFTER_MS } from "@/lib/cache";
 import { LAUNCHES_CACHE_KEY } from "@/lib/refresh";
+import { getUserFacingLaunches } from "@/lib/launches";
 import type { NormalizedLaunch } from "@/lib/contract";
 import { LaunchDetail } from "@/components/detail/LaunchDetail";
 import styles from "@/app/page.module.css";
@@ -24,7 +25,12 @@ export default async function LaunchDetailPage({
 
   const store = getCacheStore<NormalizedLaunch[]>();
   const snapshot = await store.read(LAUNCHES_CACHE_KEY);
-  const launch = snapshot?.data.find((candidate) => candidate.sourceId === sourceId);
+  // Read-time deduplication (2026-09-16 correction) - see lib/launches.ts.
+  // Looking up on the deduplicated collection (not raw snapshot.data)
+  // guarantees this resolves to the exact same record the Horizon shows
+  // for this sourceId, deterministically, even if the raw snapshot still
+  // contains an older duplicate pair.
+  const launch = getUserFacingLaunches(snapshot).find((candidate) => candidate.sourceId === sourceId);
 
   if (!launch) {
     notFound();
@@ -47,6 +53,6 @@ export async function generateMetadata({ params }: { params: Promise<{ sourceId:
   const { sourceId } = await params;
   const store = getCacheStore<NormalizedLaunch[]>();
   const snapshot = await store.read(LAUNCHES_CACHE_KEY);
-  const launch = snapshot?.data.find((candidate) => candidate.sourceId === sourceId);
+  const launch = getUserFacingLaunches(snapshot).find((candidate) => candidate.sourceId === sourceId);
   return { title: launch?.name ? `${launch.name} — LaunchCity` : "LaunchCity" };
 }
