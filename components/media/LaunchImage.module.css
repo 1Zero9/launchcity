@@ -8,6 +8,8 @@
 .detailFrame {
   position: relative;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   background: radial-gradient(ellipse 90% 140% at 50% 100%, var(--lc-horizon-soft), var(--lc-bg) 75%);
 }
@@ -22,6 +24,7 @@
 
 .dominantImg {
   width: 100%;
+  max-width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 40%;
@@ -48,6 +51,7 @@
 
 .detailImg {
   width: 100%;
+  max-width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;

@@ -1,6 +1,11 @@
 .detail {
   width: 100%;
   max-width: 38rem;
+  /* Defensive: .detail is a flex item of app/page.module.css's .page - a
+     flex item's automatic min-width can otherwise be driven up by a wide
+     descendant (e.g. an image before object-fit constrains it), forcing
+     horizontal overflow regardless of this element's own width/max-width. */
+  min-width: 0;
   margin-inline: auto;
   padding: var(--lc-space-3) var(--lc-space-2) var(--lc-space-5);
 }

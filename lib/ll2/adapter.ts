@@ -12,21 +12,46 @@ import type {
 
 /**
  * Confirmed-by-evidence Launch Library 2 status vocabulary
- * (PROJECT-OS.md domain validation, 2026-09-14, 6 live API calls).
- * There is no "Delayed" / "Scrubbed" / "Launched" value upstream - those
- * only ever appear as free-text commentary. Do not extend this mapping
- * to invent states LL2 does not actually send.
+ * (PROJECT-OS.md domain validation, 2026-09-14, 6 live API calls; extended
+ * 2026-09-16 - docs/corrections/2026-09-16-launchcity-correctness-pass.md,
+ * confirmed directly against LL2's `/config/launchstatus/` endpoint, which
+ * lists exactly 8 status values: Go, TBD, TBC, Success, Failure, Partial
+ * Failure, Hold, In Flight). There is no "Delayed" / "Scrubbed" / "Launched"
+ * value upstream - those only ever appear as free-text commentary. Do not
+ * extend this mapping to invent states LL2 does not actually send.
+ *
+ * Hold ("On Hold" - countdown paused) and In Flight ("Launch in Flight" -
+ * already airborne) both map to "confirmed": in both cases the scheduled
+ * `net` time is a real, current timestamp (the paused/actual liftoff time),
+ * not a placeholder - so it is honest, not overclaiming, to format and
+ * show it. Neither state implies an outcome (see OUTCOME_BY_ABBREV, which
+ * deliberately does not include them) - see LIVE_STATUS_BY_ABBREV below for
+ * the plain-language note that distinguishes them from an ordinary "Go".
  */
 const SCHEDULING_CONFIDENCE_BY_ABBREV: Record<string, SchedulingConfidence> = {
   Go: "confirmed",
   TBC: "estimated",
   TBD: "unknown",
+  Hold: "confirmed",
+  "In Flight": "confirmed",
 };
 
 const OUTCOME_BY_ABBREV: Record<string, LaunchOutcome> = {
   Success: "success",
   Failure: "failure",
   "Partial Failure": "partial_failure",
+};
+
+/**
+ * Plain-language note for the two LL2 statuses that are neither a future
+ * schedule nor a completed outcome. Matched on LL2's stable `abbrev` value
+ * (not the human-readable `name`), the same machine identifier
+ * SCHEDULING_CONFIDENCE_BY_ABBREV and OUTCOME_BY_ABBREV use. `null` for
+ * every other status - never guessed, never implies success or failure.
+ */
+const LIVE_STATUS_BY_ABBREV: Record<string, string> = {
+  Hold: "Countdown holding",
+  "In Flight": "Launch in progress",
 };
 
 /** Reads a nested string field defensively; never throws, never invents a value. */
@@ -98,15 +123,21 @@ export function isUsableImageUrl(value: unknown): value is string {
 }
 
 /**
- * Defensive image mapping - LL2 has never been observed (6 live calls, 0
- * captured fixtures) to return an image field at all; this exists so the
- * contract is ready if one appears, without inventing a shape upstream
- * hasn't demonstrated. Handles the two shapes LL2's public schema could
- * plausibly use (a bare URL string, or an object with an image_url/credit
- * pair) without asserting either is correct - an invalid/unusable URL
- * safely maps to `null`, never a broken <img>.
+ * Maps LL2's real image shapes (a bare URL string, or an object with an
+ * image_url/credit pair) into the contract's LaunchImage type. CORRECTED
+ * 2026-09-16 (docs/corrections/2026-09-16-launchcity-correctness-pass.md):
+ * LL2's real detailed responses DO return a top-level `image` field as a
+ * bare URL string - directly confirmed against LL2's development endpoint,
+ * contradicting the 2026-09-16 imagery experiment's premise, which was
+ * based on fixtures that had been trimmed of this field. Despite that, this
+ * function is NOT called from normalizeLaunch() below - LL2 imagery must
+ * not enter production until its source, licensing and attribution
+ * treatment are founder-approved. It is retained and unit-tested (see
+ * lib/ll2/adapter.test.ts) so it can be wired back in with a one-line
+ * change once that approval exists, and so Experiment 007's manually-seeded
+ * demo image remains reproducible via this same mapping shape.
  */
-function mapImage(raw: unknown): LaunchImage | null {
+export function mapImage(raw: unknown): LaunchImage | null {
   if (isUsableImageUrl(raw)) {
     return { url: raw, credit: null, source: "ll2" };
   }
@@ -148,6 +179,7 @@ export function normalizeLaunch(raw: unknown): NormalizedLaunch {
     : "unknown";
 
   const outcome: LaunchOutcome = abbrev ? (OUTCOME_BY_ABBREV[abbrev] ?? null) : null;
+  const liveStatus: string | null = abbrev ? (LIVE_STATUS_BY_ABBREV[abbrev] ?? null) : null;
 
   return {
     sourceId: str(o.id) ?? "unknown",
@@ -161,12 +193,19 @@ export function normalizeLaunch(raw: unknown): NormalizedLaunch {
     schedulingConfidence,
     outcome,
     upstreamStatus: str(status?.name) ?? abbrev,
+    liveStatus,
     outcomeDetail: outcome === "success" ? null : str(o.failreason),
     provider: mapProvider(o.launch_service_provider),
     vehicle: mapVehicle(o.rocket),
     site: mapSite(o.pad),
     pad: mapPad(o.pad),
     mission: mapMission(o.mission),
-    image: mapImage(o.image),
+    // LL2 image ingestion is administratively disabled pending founder
+    // approval of source, licensing and attribution - see mapImage()'s
+    // doc comment above and
+    // docs/corrections/2026-09-16-launchcity-correctness-pass.md. This is
+    // NOT "LL2 never sends an image" (it does) - it is a deliberate
+    // decision not to activate that data yet.
+    image: null,
   };
 }

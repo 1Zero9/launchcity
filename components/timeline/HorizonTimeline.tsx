@@ -27,7 +27,7 @@ export function HorizonTimeline({
   lastSuccessfulRefresh: string | null;
   freshness: CacheFreshness;
 }) {
-  const { before, dominant, after } = sequence;
+  const { before, dominant, after, overdue } = sequence;
 
   return (
     <section className={styles.horizon} aria-label="Launch timeline">
@@ -84,6 +84,15 @@ export function HorizonTimeline({
               <span className={styles.dominantMarker} aria-hidden="true" />
             </li>
           )}
+
+          {/* Overdue unresolved launches (2026-09-16 correction) - shown
+              honestly, at the same visual weight as other secondary items,
+              never as a confident "next launch." Placed immediately after
+              the dominant item since chronologically they are closest to
+              "now". */}
+          {overdue.map((launch) => (
+            <SequenceItem key={launch.sourceId} launch={launch} variant="overdue" distance={1} />
+          ))}
 
           {after.map((launch, index) => (
             <SequenceItem key={launch.sourceId} launch={launch} variant="future" distance={index + 1} />

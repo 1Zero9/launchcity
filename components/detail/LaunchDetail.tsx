@@ -6,8 +6,10 @@ import {
   describeFreshness,
   describeLaunchTime,
   describeOutcome,
+  describeOverdueLaunch,
   describePastLaunchDate,
 } from "@/lib/timeFormat";
+import { isOverdueUnresolved } from "@/lib/timeline";
 import { humanizeUnknown, orUnknown } from "@/lib/text";
 import { LaunchImage } from "@/components/media/LaunchImage";
 import styles from "./LaunchDetail.module.css";
@@ -34,7 +36,15 @@ export function LaunchDetail({
   freshness: CacheFreshness;
 }) {
   const flown = launch.outcome !== null;
-  const confidence = describeConfidence(launch.schedulingConfidence);
+  // 2026-09-16 correction: an unresolved launch whose scheduled time has
+  // already passed must not read as a confidently-scheduled future launch
+  // (the same rule buildLaunchSequence applies to the Horizon's dominant
+  // slot - see lib/timeline.ts's isOverdueUnresolved()).
+  const overdue = isOverdueUnresolved(launch);
+  // Live-status language (Hold/In Flight - 2026-09-16 correction) takes
+  // priority over the ordinary confidence tag when present - see
+  // DominantLaunch.tsx for the same rule.
+  const confidence = launch.liveStatus ?? describeConfidence(launch.schedulingConfidence);
   const mission = launch.mission;
   const missionHasContent = Boolean(mission?.description || mission?.type || mission?.orbit);
   const location = [launch.pad?.name, launch.site?.name].filter(Boolean).join(", ");
@@ -59,6 +69,12 @@ export function LaunchDetail({
             {describeOutcome(launch.outcome)}
             <span className={styles.subtle}> · {describePastLaunchDate(launch.time)}</span>
           </p>
+        ) : overdue && !launch.liveStatus ? (
+          // Overdue and not a known live state (Hold/In Flight already have
+          // their own honest liveStatus note, which takes priority - see
+          // `confidence` above) - honest "awaiting update" language, never
+          // a confidently-scheduled future time.
+          <p className={styles.time}>{describeOverdueLaunch(launch.time)}</p>
         ) : (
           <p className={styles.time}>
             {describeLaunchTime(launch.time, launch.schedulingConfidence)}

@@ -5,6 +5,7 @@ import {
   describeFreshness,
   describeLaunchTime,
   describeOutcome,
+  describeOverdueLaunch,
   describePastLaunchDate,
 } from "./timeFormat";
 
@@ -72,4 +73,18 @@ test("outcome labels never editorialize beyond a plain factual statement", () =>
 test("freshness degrades honestly when there is no cache yet", () => {
   assert.equal(describeFreshness(null), "No data yet");
   assert.equal(describeFreshness("2026-09-14T14:32:11.354Z"), "As of 14 September 2026, 14:32 UTC");
+});
+
+test("describeOverdueLaunch: shows honest 'awaiting update' language with the expected time, never an invented outcome", () => {
+  const text = describeOverdueLaunch({
+    net: "2026-09-16T06:00:00Z",
+    precision: "Minute",
+    windowStart: null,
+    windowEnd: null,
+  });
+  assert.equal(text, "Awaiting update · expected 16 September 2026, 06:00 UTC");
+});
+
+test("describeOverdueLaunch degrades honestly when net is somehow missing", () => {
+  assert.equal(describeOverdueLaunch({ net: null, precision: null, windowStart: null, windowEnd: null }), "Awaiting update");
 });

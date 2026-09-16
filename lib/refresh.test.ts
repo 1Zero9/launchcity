@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { refreshLaunchData, computeRetryDelayMs, MAX_RETRY_DELAY_MS, FALLBACK_MIN_DELAY_MS, FALLBACK_MAX_DELAY_MS } from "./refresh";
+import {
+  refreshLaunchData,
+  computeRetryDelayMs,
+  dedupeLaunches,
+  MAX_RETRY_DELAY_MS,
+  FALLBACK_MIN_DELAY_MS,
+  FALLBACK_MAX_DELAY_MS,
+} from "./refresh";
 import { LL2RequestError } from "./ll2/client";
 import type { CacheSnapshot, CacheStore } from "./cache/types";
 import type { NormalizedLaunch } from "./contract";
@@ -96,6 +103,98 @@ test("malformed records inside an otherwise-valid response do not fail the refre
   // The malformed entries normalize to safe defaults rather than being dropped or crashing.
   assert.equal(snapshot?.data[0].sourceId, "unknown");
   assert.equal(snapshot?.data[0].provider, null);
+});
+
+// --- Deduplication (2026-09-16 correctness pass -
+// docs/corrections/2026-09-16-launchcity-correctness-pass.md): LL2's
+// upcoming/previous lists can genuinely overlap by sourceId, confirmed
+// against this project's own real cached data (the same launch appeared
+// twice, identically). ---
+
+function minimalLaunch(overrides: Partial<NormalizedLaunch> & { sourceId: string }): NormalizedLaunch {
+  return {
+    name: null,
+    time: { net: null, precision: null, windowStart: null, windowEnd: null },
+    schedulingConfidence: "unknown",
+    outcome: null,
+    upstreamStatus: null,
+    liveStatus: null,
+    outcomeDetail: null,
+    provider: null,
+    vehicle: null,
+    site: null,
+    pad: null,
+    mission: null,
+    image: null,
+    ...overrides,
+  };
+}
+
+test("dedupeLaunches: an identical duplicate sourceId collapses to one record", () => {
+  const a = minimalLaunch({ sourceId: "dup-1", name: "Same Launch" });
+  const b = minimalLaunch({ sourceId: "dup-1", name: "Same Launch" });
+  const result = dedupeLaunches([a, b]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].sourceId, "dup-1");
+});
+
+test("dedupeLaunches: a record with a known outcome wins over an unresolved record with the same sourceId", () => {
+  const unresolvedInUpcoming = minimalLaunch({ sourceId: "shared", outcome: null, upstreamStatus: "Go for Launch" });
+  const flownInPrevious = minimalLaunch({ sourceId: "shared", outcome: "success", upstreamStatus: "Launch Successful" });
+  const result = dedupeLaunches([unresolvedInUpcoming, flownInPrevious]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].outcome, "success", "the flown record must win, never regress back to unresolved");
+});
+
+test("dedupeLaunches: outcome preference is order-independent (flown-first input also keeps the flown record)", () => {
+  const flownFirst = minimalLaunch({ sourceId: "shared", outcome: "success" });
+  const unresolvedSecond = minimalLaunch({ sourceId: "shared", outcome: null });
+  const result = dedupeLaunches([flownFirst, unresolvedSecond]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].outcome, "success");
+});
+
+test("dedupeLaunches: when neither/both records have an outcome, the later occurrence wins", () => {
+  const first = minimalLaunch({ sourceId: "shared", name: "First copy" });
+  const second = minimalLaunch({ sourceId: "shared", name: "Second copy" });
+  const result = dedupeLaunches([first, second]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].name, "Second copy");
+});
+
+test("dedupeLaunches: distinct launches are all preserved, in original order", () => {
+  const a = minimalLaunch({ sourceId: "a" });
+  const b = minimalLaunch({ sourceId: "b" });
+  const c = minimalLaunch({ sourceId: "c" });
+  const result = dedupeLaunches([a, b, c]);
+  assert.deepEqual(result.map((l) => l.sourceId), ["a", "b", "c"]);
+});
+
+test("dedupeLaunches: multiple records sharing the 'unknown' placeholder sourceId are never collapsed into each other", () => {
+  const a = minimalLaunch({ sourceId: "unknown", name: "Malformed A" });
+  const b = minimalLaunch({ sourceId: "unknown", name: "Malformed B" });
+  const result = dedupeLaunches([a, b]);
+  assert.equal(result.length, 2, "distinct malformed records must not be silently merged just because they share the placeholder id");
+});
+
+test("refreshLaunchData: overlap between upcoming and previous results is deduplicated before the KV write", async () => {
+  const store = new FakeStore();
+  const overlapping = {
+    id: "overlap-1",
+    name: "Falcon 9 Block 5 | O3b mPower 11-13",
+    status: { abbrev: "Success", name: "Launch Successful" },
+  };
+  const result = await refreshLaunchData({
+    fetchUpcoming: async () => ({ count: 1, next: null, previous: null, results: [overlapping] }) as never,
+    fetchPrevious: async () => ({ count: 1, next: null, previous: null, results: [overlapping] }) as never,
+    store,
+    ...fastDeps,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.launchCount, 1, "the same sourceId from both endpoints must appear once, not twice");
+  const snapshot = await store.read();
+  assert.equal(snapshot?.data.length, 1);
 });
 
 // --- Retry behaviour (2026-09-16 production incident) ---

@@ -2,6 +2,9 @@
   position: relative;
   width: 100%;
   max-width: 72rem;
+  /* Defensive: .horizon is a flex item of app/page.module.css's .page -
+     see the same rule on LaunchDetail.module.css's .detail for why. */
+  min-width: 0;
   margin-inline: auto;
   padding: var(--lc-space-3) var(--lc-space-2);
 }

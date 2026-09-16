@@ -61,6 +61,20 @@ export function describePastLaunchDate(time: TimePrecision): string {
   return date ? formatDate(date) : "Date unknown";
 }
 
+/**
+ * For an unresolved launch (no outcome yet) whose scheduled time has
+ * already passed - honest language for a launch LaunchCity has not
+ * received an update for, without inventing an outcome or re-claiming
+ * future certainty (docs/corrections/2026-09-16-launchcity-correctness-pass.md).
+ * Never used for a launch with a genuinely unknown (TBD) time - that case
+ * is not "overdue," it is simply undated, and stays on
+ * `describeLaunchTime`'s "Date not yet set" path.
+ */
+export function describeOverdueLaunch(time: TimePrecision): string {
+  const date = parseUtc(time.net);
+  return date ? `Awaiting update · expected ${formatDate(date)}, ${formatTime(date)} UTC` : "Awaiting update";
+}
+
 export function describeConfidence(confidence: SchedulingConfidence): string | null {
   switch (confidence) {
     case "confirmed":

@@ -83,6 +83,64 @@ async function defaultSleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Deduplicates the combined upcoming+previous launch list by `sourceId`.
+ *
+ * CORRECTED 2026-09-16 (docs/corrections/2026-09-16-launchcity-correctness-pass.md):
+ * LL2's `upcoming` and `previous` lists can genuinely overlap - a launch
+ * that has recently flown can still appear in `upcoming` (not yet dropped
+ * upstream) while also appearing in `previous` (now reported with an
+ * outcome). Confirmed directly against this project's own real cached
+ * data: the same `sourceId` appeared twice with identical fields.
+ *
+ * Deduplication rule (deterministic, evidence-based - see the commit
+ * message and correction record for the reasoning): keep one record per
+ * `sourceId`, preferring whichever occurrence best reflects the launch's
+ * CURRENT temporal/outcome state -
+ *   1. a record with a known `outcome` always wins over one without,
+ *      since a launch that has since flown should show as flown, never
+ *      regressed back to "unresolved" by an earlier `upcoming` record
+ *      LL2 hasn't dropped yet;
+ *   2. otherwise (neither or both have an outcome), the LATER occurrence
+ *      in the combined [...upcoming, ...previous] order wins, since it
+ *      reflects whichever endpoint's copy of the record was appended most
+ *      recently for this refresh.
+ * First-seen order is preserved for the surviving records (a Map's
+ * insertion order does not change when an existing key's value is
+ * updated), so callers that don't re-sort still see a stable ordering.
+ *
+ * `sourceId: "unknown"` (normalizeLaunch()'s defensive fallback for a
+ * record with no real upstream `id` - see lib/ll2/adapter.ts) is
+ * deliberately NEVER deduplicated against itself: it is a placeholder for
+ * "no real identity was available," not a genuine shared identity, so
+ * multiple distinct malformed records must not be collapsed into one just
+ * because they all fell back to the same placeholder. Original relative
+ * order is preserved for every surviving record, including these.
+ */
+export function dedupeLaunches(launches: NormalizedLaunch[]): NormalizedLaunch[] {
+  // Pass 1: decide which index wins for each real (non-"unknown") sourceId.
+  const winningIndexBySourceId = new Map<string, number>();
+  launches.forEach((launch, index) => {
+    if (launch.sourceId === "unknown") return;
+    const currentWinnerIndex = winningIndexBySourceId.get(launch.sourceId);
+    if (currentWinnerIndex === undefined) {
+      winningIndexBySourceId.set(launch.sourceId, index);
+      return;
+    }
+    const currentWinner = launches[currentWinnerIndex];
+    const keepCurrentWinner = currentWinner.outcome !== null && launch.outcome === null;
+    if (!keepCurrentWinner) {
+      winningIndexBySourceId.set(launch.sourceId, index);
+    }
+  });
+
+  // Pass 2: keep every "unknown"-id record, plus only the winning index
+  // for each real sourceId, in original order.
+  return launches.filter(
+    (launch, index) => launch.sourceId === "unknown" || winningIndexBySourceId.get(launch.sourceId) === index,
+  );
+}
+
 /** Structured, non-sensitive operational logging - never response bodies,
  * secrets, or full launch datasets, only counts/categories/statuses. */
 function logEvent(event: string, fields: Record<string, unknown> = {}): void {
@@ -169,7 +227,11 @@ export async function refreshLaunchData(
 
     // Defensive per-record normalization: normalizeLaunch() never throws,
     // so one malformed record can't take down the whole refresh.
-    const launches = [...upcoming.results, ...previous.results].map(normalizeLaunch);
+    const normalized = [...upcoming.results, ...previous.results].map(normalizeLaunch);
+    // LL2's upcoming/previous lists can genuinely overlap by sourceId (see
+    // dedupeLaunches() doc comment) - deduplicate before writing so the
+    // same launch never appears twice on the Horizon.
+    const launches = dedupeLaunches(normalized);
 
     await store.write(LAUNCHES_CACHE_KEY, {
       data: launches,

@@ -10,7 +10,11 @@ import styles from "./HorizonTimeline.module.css";
  * more, nothing less.
  */
 export function DominantLaunch({ launch }: { launch: NormalizedLaunch }) {
-  const confidence = describeConfidence(launch.schedulingConfidence);
+  // Live-status language (Hold/In Flight - 2026-09-16 correction) takes
+  // priority over the ordinary confidence tag when present: it is more
+  // specific and honest about the launch's current state than "Confirmed"
+  // would be for a paused countdown or an already-airborne vehicle.
+  const statusNote = launch.liveStatus ?? describeConfidence(launch.schedulingConfidence);
 
   return (
     <div className={styles.dominant}>
@@ -19,7 +23,7 @@ export function DominantLaunch({ launch }: { launch: NormalizedLaunch }) {
       <h1 className={styles.dominantName}>{orUnknown(launch.name)}</h1>
       <p className={styles.dominantTime}>
         {describeLaunchTime(launch.time, launch.schedulingConfidence)}
-        {confidence && <span className={styles.confidence}> · {confidence}</span>}
+        {statusNote && <span className={styles.confidence}> · {statusNote}</span>}
       </p>
       <dl className={styles.dominantFacts}>
         <div>

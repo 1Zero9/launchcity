@@ -73,11 +73,19 @@ export interface Pad {
  * does not genuinely depict the specific launch/vehicle/mission it is
  * attached to - see PROJECT-OS.md 2026-09-16 founder correction.
  *
- * As of 2026-09-16, no real captured Launch Library 2 response (6 live
- * calls across upcoming/previous/detailed modes) has ever contained an
- * image field - this type and its adapter mapping exist so the contract is
- * ready if/when LL2 exposes one, not because one has been observed. Until
- * then this will be `null` for every real launch.
+ * CORRECTED 2026-09-16 (docs/corrections/2026-09-16-launchcity-correctness-pass.md):
+ * LL2's real detailed responses DO contain a top-level `image` field (a
+ * bare URL string) - the 2026-09-16 imagery experiment's premise that "no
+ * real LL2 response has ever contained an image" was based on trimmed
+ * fixtures, not a genuine absence. Because the source, licensing and
+ * attribution treatment for that real LL2 image data have not been
+ * founder-approved, the adapter (`lib/ll2/adapter.ts`) no longer maps LL2's
+ * `image` field into this contract in production - `normalizeLaunch()`
+ * always produces `image: null` today, regardless of what LL2 sends. This
+ * type and the `LaunchImage`/`mapImage` machinery are retained, tested and
+ * ready to re-enable once that approval exists - see Experiment 007
+ * (`docs/experiments/007-launchcity-imagery-visual-proof.md`), which
+ * remains reproducible against this type.
  */
 export interface LaunchImage {
   url: string;
@@ -115,6 +123,15 @@ export interface NormalizedLaunch {
   outcome: LaunchOutcome;
   /** Raw upstream status text, preserved for display/debugging only. */
   upstreamStatus: string | null;
+  /**
+   * Honest, plain-language note for an LL2 status that is neither a future
+   * schedule nor a completed outcome - specifically "Hold" (countdown
+   * paused, the scheduled time still applies) and "In Flight" (already
+   * airborne, no outcome reported yet). `null` for every other status.
+   * Never a substitute for `outcome` and never implies a result LL2 has
+   * not reported (docs/corrections/2026-09-16-launchcity-correctness-pass.md).
+   */
+  liveStatus: string | null;
   /** Free-text outcome detail (e.g. failure reason), preserved as-is. */
   outcomeDetail: string | null;
   provider: Provider | null;
