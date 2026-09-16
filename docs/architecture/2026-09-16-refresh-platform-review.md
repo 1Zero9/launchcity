@@ -175,3 +175,81 @@ Each option is assessed against: likelihood of resolving the 429 problem, implem
   - Running the Part 4 spike itself, once explicitly authorised, and reporting its raw findings without interpretation beyond what the two data points show.
   - Continuing to monitor `/diagnostics` freshness under the already-deployed retry correction while a decision on the above is pending - no code change is needed to keep observing.
   - Declining to pursue Option C (full platform move) or Option E (provider change) absent new evidence, since both are evidence-weak per this review.
+
+---
+
+## Part 6: Spike execution and results (2026-09-16, post-authorisation)
+
+### Method
+
+A temporary, `workflow_dispatch`-only GitHub Actions workflow (`.github/workflows/ll2-egress-spike.yml`, commit `5a6f0154`) ran once on a standard `ubuntu-latest` GitHub-hosted runner (run `35132101056`). It made exactly two anonymous, unretried, read-only `GET` requests:
+1. `https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=30&mode=detailed` - the exact endpoint LaunchCity's production Worker calls.
+2. `https://ll.thespacedevs.com/2.2.0/api-throttle/` - LL2's own documented throttle-status endpoint.
+
+Only timestamps, status, duration, size, and rate-limit-related headers were intended to be logged. The workflow was removed immediately after (commit `c957225a`), and no trace of it remains on `main`.
+
+**Correction made during execution:** the `/api-throttle/` endpoint's own response body includes an `ident` field, which is the caller's IP address as LL2 sees it - this was not anticipated when the workflow was written, and printing that field violated the "no IP addresses in logs" constraint. On discovering this, the workflow run's log was deleted via `gh run delete` immediately (before this document was written), and the IP value itself is not reproduced anywhere below or elsewhere in this repository. The workflow's script logic (rather than the data it captured) is treated as the artefact worth keeping in `docs/`, in sanitised form.
+
+### Sanitised results
+
+**GitHub Actions (run `35132101056`, `ubuntu-latest`, Azure West US):**
+
+| Request | Timestamp (start → end, UTC) | Status | Duration | Size | Retry-After | Rate-limit headers |
+|---|---|---|---|---|---|---|
+| `/launch/upcoming/` | `18:04:31.695` → `18:04:32.902` | **200** | 1.19s | 392,217 bytes | none | none present |
+| `/api-throttle/` | `18:04:32.959` → `18:04:33.090` | **200** | 0.12s | 110 bytes | none | none present |
+
+`/api-throttle/`'s own status payload (IP redacted): `your_request_limit: 15, limit_frequency_secs: 3600, current_use: 1, next_use_secs: 0` - i.e. at the moment of this run, the GitHub Actions runner's identity, as seen by LL2, had used only **1 of its 15 hourly requests** and was not rate-limited at all.
+
+**Cloudflare (natural cron cycle, no manual trigger, via read-only `wrangler tail`):**
+
+| Event | Timestamp (UTC) | Detail |
+|---|---|---|
+| Cron fire | `18:15:27` | `*/15 * * * *`, Worker-level "Ok" |
+| `refresh_start` | `18:15:32.918` | |
+| `upcoming` initial call | `18:15:33.678` | **429 Too Many Requests**, classified transient |
+| Retry decision | `18:15:33.678` | `willRetry: true` |
+| Retry delay | - | 5000ms (capped) |
+| Retry outcome | `18:15:38.913` | **429 Too Many Requests** again |
+| `refresh_complete` | `18:15:38.913` | `ok: false`, `requestCost: 2` |
+
+This was the third consecutive natural Cloudflare cycle observed across this incident (previously `16:30:27` and `17:30:27` on 2026-09-16) to show the identical `429 → bounded retry → 429` pattern.
+
+**Notable additional observation (not part of the spike itself, seen while rechecking `/diagnostics` afterward):** a Cloudflare cycle at `18:00:42.991Z` - the one immediately *before* the `18:15` cycle captured above - **did succeed** (`requestCost: 2`, no retry needed, freshness briefly returned to "fresh"). This shows the Cloudflare-origin condition is intermittent, not a hard/permanent block - consistent with a shared, fluctuating-congestion identity rather than e.g. a fixed ban.
+
+### Timing comparison
+
+- GitHub Actions request: `18:04:31Z`.
+- Nearest Cloudflare natural cycle: `18:15:27Z` (cron fire), `18:15:33Z` (actual LL2 call).
+- **Time difference: ~11 minutes.** Not simultaneous, but both fall within the same ~15-minute window and the same general period of upstream conditions; a Cloudflare cycle *did* succeed in between (`18:00`), meaning the comparison window spans both a Cloudflare success and a Cloudflare failure, bracketing the GitHub Actions success.
+
+### What the comparison supports
+
+- At `18:04Z`, from GitHub Actions, LL2 responded `200` to the exact endpoint LaunchCity calls, and reported the calling identity's quota as nearly untouched (1/15 used).
+- At `18:15Z`, ~11 minutes later, from Cloudflare, the identical endpoint returned `429` twice (initial + retry) for LaunchCity's own calling identity.
+- This is a genuine difference in outcome, from two different hosted execution environments, calling the identical endpoint within the same narrow time window, while LaunchCity's own request volume from Cloudflare remained low (at most 2-4 requests/hour under the deployed retry control).
+
+### What it cannot prove
+
+- **A single paired observation is suggestive, not conclusive.** One success from GitHub Actions and one failure from Cloudflare, 11 minutes apart, does not by itself rule out ordinary time-based variance (i.e. that Cloudflare's specific egress IP at `18:15` was independently congested by unrelated traffic that had nothing to do with it being Cloudflare specifically, and might have cleared by `18:16`).
+- It does not identify the exact rate-limit key LL2 uses (still not directly observable without upstream cooperation).
+- It does not distinguish "Cloudflare Workers as a platform are structurally worse for this" from "this specific Cloudflare Worker's IP, at this specific time, happened to be congested" - a longer or repeated comparison would be needed to fully separate those.
+- It does not test whether GitHub Actions would hold up under LaunchCity's actual sustained cadence (4 requests/hour, every day) rather than a single one-off request.
+
+### Conclusion and confidence
+
+**SUPPORTS EXECUTION-ENVIRONMENT HYPOTHESIS.**
+
+**Confidence: Medium.** The single paired comparison, combined with the now-three-times-repeated Cloudflare-origin failure pattern and the newly observed intermittent (not permanent) nature of the Cloudflare-origin condition, is consistent with - and adds direct, only-11-minutes-apart evidence for - the hypothesis that LaunchCity's Cloudflare-origin calls are experiencing a rate-limit condition that a different hosted environment, calling the same endpoint at almost the same time, did not experience. It is not proof of a structural, permanent difference between the platforms, and the single-sample nature of the spike (by design, to stay within the approved request budget) limits how far this can be generalised.
+
+### Remaining uncertainty
+
+- Whether this holds up over repeated observation, or was a one-off timing coincidence.
+- Whether GitHub Actions' own documented scheduling unreliability (5-30+ minute delays at peak times, per its own docs) would erode this apparent advantage under LaunchCity's real ~15-minute cadence.
+- Whether an authenticated LL2 key (Option A) would resolve the problem just as effectively, more simply, and without reintroducing a second operational system - this spike did not test Option A at all.
+
+### Recommendation
+
+Given Medium-confidence support for the execution-environment hypothesis, but with the *cheapest, lowest-risk* option (A: authenticated LL2 access) still completely untested, and the observed Cloudflare-origin condition now confirmed intermittent rather than permanently broken:
+
+**Investigate authenticated LL2 access (Option A) next**, before committing to any ingestion-path migration (Option B/D). It is a single-secret change, fully reversible, does not reintroduce the two-system operational split the Cloudflare migration deliberately removed, and - per LL2's own documented Patreon-tier mechanism - most directly addresses a per-identity rate limit regardless of whether the identity in question is "Cloudflare Workers' shared IP pool" specifically or something else entirely. If Option A does not resolve the problem, this spike's evidence (best-supported alternative environment: GitHub Actions) becomes the basis for testing Option B/D next.
