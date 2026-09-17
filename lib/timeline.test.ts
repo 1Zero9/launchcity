@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildLaunchSequence, isOverdueUnresolved } from "./timeline";
+import { buildHorizonRail, buildLaunchSequence, isOverdueUnresolved } from "./timeline";
 import type { NormalizedLaunch } from "./contract";
 
 function launch(overrides: Partial<NormalizedLaunch> & { sourceId: string }): NormalizedLaunch {
@@ -144,4 +144,53 @@ test("isOverdueUnresolved: false for a flown launch, regardless of its time", ()
 
 test("isOverdueUnresolved: false for a TBD launch (no net time to compare)", () => {
   assert.equal(isOverdueUnresolved(launch({ sourceId: "x", schedulingConfidence: "unknown" }), NOW), false);
+});
+
+// --- buildHorizonRail (Experiment 007 recovery) ---
+
+const RAIL_NOW = Date.parse("2026-09-17T12:00:00Z");
+const overdue = (id: string, net: string) => future(id, net);
+
+test("rail is capped and balanced: 2 recent, NEXT, 2 upcoming - regardless of how much is cached", () => {
+  const launches = [
+    past("p1", "2026-09-10T00:00:00Z"),
+    past("p2", "2026-09-11T00:00:00Z"),
+    past("p3", "2026-09-13T00:00:00Z"),
+    future("f1", "2026-09-18T00:00:00Z"),
+    future("f2", "2026-09-19T00:00:00Z"),
+    future("f3", "2026-09-20T00:00:00Z"),
+    future("f4", "2026-09-21T00:00:00Z"),
+  ];
+  const rail = buildHorizonRail(launches, 2, RAIL_NOW);
+  assert.deepEqual(rail.left.map((s) => s.launch.sourceId), ["p2", "p3"]);
+  assert.deepEqual(rail.left.map((s) => s.distance), [2, 1]);
+  assert.equal(rail.next?.sourceId, "f1");
+  assert.deepEqual(rail.right.map((s) => s.launch.sourceId), ["f2", "f3"]);
+  assert.deepEqual(rail.hiddenOverdue, []);
+});
+
+test("many overdue launches never flood the rail; the rest are disclosed, not dropped", () => {
+  const launches = [
+    past("p1", "2026-09-13T00:00:00Z"),
+    overdue("o1", "2026-09-15T06:25:00Z"),
+    overdue("o2", "2026-09-16T13:33:00Z"),
+    overdue("o3", "2026-09-17T11:40:00Z"),
+    future("f1", "2026-09-19T10:50:00Z"),
+  ];
+  const rail = buildHorizonRail(launches, 2, RAIL_NOW);
+  // chronological, oldest left: the flown launch stays visible
+  assert.deepEqual(rail.left.map((s) => [s.launch.sourceId, s.kind]), [["p1", "past"], ["o3", "overdue"]]);
+  assert.deepEqual(rail.hiddenOverdue.map((l) => l.sourceId), ["o2", "o1"]);
+  assert.equal(rail.next?.sourceId, "f1");
+});
+
+test("with no flown launches, overdue launches may use every recent slot", () => {
+  const rail = buildHorizonRail(
+    [overdue("o1", "2026-09-16T00:00:00Z"), overdue("o2", "2026-09-17T00:00:00Z"), overdue("o3", "2026-09-15T00:00:00Z")],
+    2,
+    RAIL_NOW,
+  );
+  assert.deepEqual(rail.left.map((s) => s.launch.sourceId), ["o1", "o2"]);
+  assert.deepEqual(rail.hiddenOverdue.map((l) => l.sourceId), ["o3"]);
+  assert.equal(rail.next, null);
 });

@@ -1,8 +1,7 @@
-import Link from "next/link";
 import type { CacheFreshness } from "@/lib/cache";
 import type { NormalizedLaunch } from "@/lib/contract";
+import { describeLaunchStatus } from "@/lib/status";
 import {
-  describeConfidence,
   describeFreshness,
   describeLaunchTime,
   describeOutcome,
@@ -11,91 +10,72 @@ import {
 } from "@/lib/timeFormat";
 import { isOverdueUnresolved } from "@/lib/timeline";
 import { humanizeUnknown, orUnknown } from "@/lib/text";
+import { HorizonScene } from "@/components/scene/HorizonScene";
 import { LaunchImage } from "@/components/media/LaunchImage";
+import { LaunchFacts } from "@/components/launch/LaunchFacts";
+import { StatusPill } from "@/components/launch/StatusPill";
 import styles from "./LaunchDetail.module.css";
 
 /**
- * Launch Detail - progressive disclosure from the Horizon, reached only by
- * deliberately opening one launch. Answers "what is this launch?", nothing
- * more. Sections are conceptual, not mandatory boxes: absent information
- * means an omitted section, never an invented or empty one.
- *
- * Note on data: LL2's `mission.description` is the same source value as
- * the contract's `mission.payloadSummary` (see lib/ll2/adapter.ts) - there
- * is no distinct payload text to disclose beyond the mission description,
- * so "Mission" and "Payload/Purpose" are presented as one section, not two
- * that would otherwise repeat identical text.
+ * Launch Detail, Panel C lower view (Experiment 007 recovery): an identity
+ * panel - title, date with status pill, provider/vehicle/location - with
+ * the launch photo (or the horizon scene) integrated on the right; then
+ * Mission and Launch sections. Sections with no data are omitted, never
+ * filled with invented text.
  */
 export function LaunchDetail({
   launch,
+  now,
   lastSuccessfulRefresh,
   freshness,
+  sourceLabel,
 }: {
   launch: NormalizedLaunch;
+  now: number;
+  /** Where this data came from, stated honestly (review mode is not LL2). */
+  sourceLabel: string;
   lastSuccessfulRefresh: string | null;
   freshness: CacheFreshness;
 }) {
   const flown = launch.outcome !== null;
-  // 2026-09-16 correction: an unresolved launch whose scheduled time has
-  // already passed must not read as a confidently-scheduled future launch
-  // (the same rule buildLaunchSequence applies to the Horizon's dominant
-  // slot - see lib/timeline.ts's isOverdueUnresolved()).
-  const overdue = isOverdueUnresolved(launch);
-  // Live-status language (Hold/In Flight - 2026-09-16 correction) takes
-  // priority over the ordinary confidence tag when present - see
-  // DominantLaunch.tsx for the same rule.
-  const confidence = launch.liveStatus ?? describeConfidence(launch.schedulingConfidence);
+  const overdue = isOverdueUnresolved(launch, now);
+  const status = describeLaunchStatus(launch, now);
   const mission = launch.mission;
   const missionHasContent = Boolean(mission?.description || mission?.type || mission?.orbit);
-  const location = [launch.pad?.name, launch.site?.name].filter(Boolean).join(", ");
   const vehicleFamily =
     launch.vehicle?.family && launch.vehicle.family !== launch.vehicle.name ? launch.vehicle.family : null;
 
+  const when = flown
+    ? describePastLaunchDate(launch.time)
+    : overdue && !launch.liveStatus
+      ? describeOverdueLaunch(launch.time)
+      : describeLaunchTime(launch.time, launch.schedulingConfidence);
+
   return (
     <article className={styles.detail}>
-      <Link href="/" className={styles.back}>
-        ← Back to horizon
-      </Link>
-
-      {/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
-          a CSS grid (see LaunchDetail.module.css's .layout) places these
-          sections into named areas - a large image participating
-          alongside the text on desktop (Panel C's lower-right Detail
-          treatment), while mobile falls back to plain source order:
-          identity, then image, then mission/launch/outcome/provenance -
-          identity stays visible first, and the image never pushes the
-          rest of the content out of reach. */}
-      <div className={styles.layout}>
-        <section className={`${styles.identity} ${styles.areaIdentity}`}>
-          <span className={styles.marker} aria-hidden="true" />
-          <p className={styles.eyebrow}>{flown ? "Completed launch" : "Upcoming launch"}</p>
-          <h1 className={styles.name}>{orUnknown(launch.name)}</h1>
-
-          {flown ? (
-            <p className={styles.outcome}>
-              {describeOutcome(launch.outcome)}
-              <span className={styles.subtle}> · {describePastLaunchDate(launch.time)}</span>
-            </p>
-          ) : overdue && !launch.liveStatus ? (
-            // Overdue and not a known live state (Hold/In Flight already have
-            // their own honest liveStatus note, which takes priority - see
-            // `confidence` above) - honest "awaiting update" language, never
-            // a confidently-scheduled future time.
-            <p className={styles.time}>{describeOverdueLaunch(launch.time)}</p>
-          ) : (
-            <p className={styles.time}>
-              {describeLaunchTime(launch.time, launch.schedulingConfidence)}
-              {confidence && <span className={styles.confidence}> · {confidence}</span>}
-            </p>
-          )}
-        </section>
-
-        <div className={styles.areaMedia}>
+      <section className={styles.panel}>
+        <HorizonScene className={styles.scene}>
           <LaunchImage image={launch.image} variant="detail" />
-        </div>
+        </HorizonScene>
 
+        <div className={styles.identity}>
+          <p className={styles.eyebrow}>{flown ? "Completed launch" : overdue ? "Scheduled launch" : "Upcoming launch"}</p>
+          <h1 className={styles.title}>{orUnknown(launch.name)}</h1>
+          <p className={styles.whenRow}>
+            <span className={styles.when}>{when}</span>
+            <StatusPill status={status} />
+          </p>
+          <LaunchFacts launch={launch} />
+          <p className={freshness === "stale" ? `${styles.provenance} ${styles.stale}` : styles.provenance}>
+            Source: {sourceLabel} · {describeFreshness(lastSuccessfulRefresh)}
+            {freshness === "stale" && " (showing the last known data)"}
+          </p>
+        </div>
+      </section>
+
+      <div className={styles.sections}>
         {missionHasContent && (
-          <section className={`${styles.section} ${styles.areaMission}`}>
+          <section className={styles.section}>
             <h2 className={styles.heading}>Mission</h2>
             {mission?.description && <p className={styles.body}>{mission.description}</p>}
             {(mission?.type || mission?.orbit) && (
@@ -117,7 +97,7 @@ export function LaunchDetail({
           </section>
         )}
 
-        <section className={`${styles.section} ${styles.areaLaunch}`}>
+        <section className={styles.section}>
           <h2 className={styles.heading}>Launch</h2>
           <dl className={styles.facts}>
             <div>
@@ -135,23 +115,21 @@ export function LaunchDetail({
               </dd>
             </div>
             <div>
-              <dt>Site</dt>
-              <dd>{location || "Unknown"}</dd>
+              <dt>Pad</dt>
+              <dd>{orUnknown(launch.pad?.name)}</dd>
             </div>
           </dl>
         </section>
 
-        {flown && launch.outcomeDetail && (
-          <section className={`${styles.section} ${styles.areaOutcome}`}>
+        {flown && (
+          <section className={styles.section}>
             <h2 className={styles.heading}>Outcome</h2>
-            <p className={styles.body}>{launch.outcomeDetail}</p>
+            <p className={styles.body}>
+              {describeOutcome(launch.outcome)}
+              {launch.outcomeDetail && ` — ${launch.outcomeDetail}`}
+            </p>
           </section>
         )}
-
-        <p className={`${styles.provenance} ${styles.areaProvenance}`}>
-          Source: Launch Library 2 · {describeFreshness(lastSuccessfulRefresh)}
-          {freshness === "stale" && " (showing the last known data)"}
-        </p>
       </div>
     </article>
   );

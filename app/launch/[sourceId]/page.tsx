@@ -1,58 +1,56 @@
 import { notFound } from "next/navigation";
-import { getCacheStore, freshnessOf, STALE_AFTER_MS } from "@/lib/cache";
-import { LAUNCHES_CACHE_KEY } from "@/lib/refresh";
+import { freshnessOf, STALE_AFTER_MS } from "@/lib/cache";
 import { getUserFacingLaunches } from "@/lib/launches";
-import type { NormalizedLaunch } from "@/lib/contract";
+import { loadLaunchData } from "@/lib/launchData";
 import { LaunchDetail } from "@/components/detail/LaunchDetail";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import styles from "@/app/page.module.css";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Launch Detail (frozen experience architecture, Surface 2) - reached only
- * by deliberately opening a launch from the Horizon. The route uses the
- * launch's existing upstream source identifier (`sourceId`, already part
- * of the LaunchCity contract) rather than inventing a new identifier
- * strategy - see PROJECT-OS.md, identifier strategy remains otherwise
- * undecided and this does not resolve it, it just doesn't need to.
+ * Launch Detail (Surface 2) - reached by opening a launch from the Horizon.
+ * Looks up the deduplicated collection (lib/launches.ts) so it always
+ * resolves the same record the Horizon shows for this sourceId.
  */
-export default async function LaunchDetailPage({
-  params,
-}: {
-  params: Promise<{ sourceId: string }>;
-}) {
+export default async function LaunchDetailPage({ params, searchParams }: PageProps<"/launch/[sourceId]">) {
   const { sourceId } = await params;
-
-  const store = getCacheStore<NormalizedLaunch[]>();
-  const snapshot = await store.read(LAUNCHES_CACHE_KEY);
-  // Read-time deduplication (2026-09-16 correction) - see lib/launches.ts.
-  // Looking up on the deduplicated collection (not raw snapshot.data)
-  // guarantees this resolves to the exact same record the Horizon shows
-  // for this sourceId, deterministically, even if the raw snapshot still
-  // contains an older duplicate pair.
+  const { review: scenario } = await searchParams;
+  const { snapshot, now, review } = await loadLaunchData(scenario);
   const launch = getUserFacingLaunches(snapshot).find((candidate) => candidate.sourceId === sourceId);
 
   if (!launch) {
     notFound();
   }
 
-  const freshness = freshnessOf(snapshot, STALE_AFTER_MS);
+  const freshness = freshnessOf(snapshot, STALE_AFTER_MS, now);
+  const lastSuccessfulRefresh = snapshot?.lastSuccessfulRefresh ?? null;
 
   return (
-    <main className={styles.page}>
-      <LaunchDetail
-        launch={launch}
-        lastSuccessfulRefresh={snapshot?.lastSuccessfulRefresh ?? null}
+    <>
+      <SiteHeader
+        lastSuccessfulRefresh={lastSuccessfulRefresh}
         freshness={freshness}
+        review={review}
+        backHref={`/${review?.query ?? ""}`}
       />
-    </main>
+      <main className={styles.page}>
+        <LaunchDetail
+          launch={launch}
+          now={now}
+          lastSuccessfulRefresh={lastSuccessfulRefresh}
+          freshness={freshness}
+          sourceLabel={review ? "review demonstration data, not Launch Library 2" : "Launch Library 2"}
+        />
+      </main>
+    </>
   );
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ sourceId: string }> }) {
+export async function generateMetadata({ params, searchParams }: PageProps<"/launch/[sourceId]">) {
   const { sourceId } = await params;
-  const store = getCacheStore<NormalizedLaunch[]>();
-  const snapshot = await store.read(LAUNCHES_CACHE_KEY);
+  const { review: scenario } = await searchParams;
+  const { snapshot } = await loadLaunchData(scenario);
   const launch = getUserFacingLaunches(snapshot).find((candidate) => candidate.sourceId === sourceId);
   return { title: launch?.name ? `${launch.name} — LaunchCity` : "LaunchCity" };
 }

@@ -11,18 +11,16 @@ import detailStyles from "@/components/detail/LaunchDetail.module.css";
 export default function LaunchNotFound() {
   return (
     <main className={styles.page}>
-      <article className={detailStyles.detail}>
-        <Link href="/" className={detailStyles.back}>
-          ← Back to horizon
+      <article className={detailStyles.notFound}>
+        <Link href="/" className={detailStyles.notFoundBack}>
+          ← Back to timeline
         </Link>
-        <section className={detailStyles.identity}>
-          <p className={detailStyles.eyebrow}>Launch not available</p>
-          <h1 className={detailStyles.name}>We don&rsquo;t currently have this launch cached</h1>
-          <p className={detailStyles.time}>
-            LaunchCity&rsquo;s cache is disposable and refreshes regularly - this launch may have aged out
-            of the current window, or the link may be out of date.
-          </p>
-        </section>
+        <p className={detailStyles.eyebrow}>Launch not available</p>
+        <h1 className={detailStyles.title}>We don&rsquo;t currently have this launch cached</h1>
+        <p className={detailStyles.when}>
+          LaunchCity&rsquo;s cache is disposable and refreshes regularly - this launch may have aged out of the
+          current window, or the link may be out of date.
+        </p>
       </article>
     </main>
   );

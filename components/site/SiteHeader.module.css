@@ -1,0 +1,102 @@
+.reviewBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.45rem var(--lc-space-2);
+  font-size: 0.75rem;
+  color: #1a1204;
+  background: #f5c77e;
+}
+
+.scenarios {
+  display: inline-flex;
+  gap: 0.75rem;
+}
+
+.scenarios a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.scenarios a[aria-current="true"] {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.header {
+  width: 100%;
+  max-width: var(--lc-page-max);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--lc-space-2);
+  padding: 1.25rem var(--lc-gutter) 1rem;
+}
+
+.identity {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--lc-fg);
+}
+
+.identityEnd {
+  order: 3;
+}
+
+.back {
+  font-size: 0.875rem;
+  color: var(--lc-fg-secondary);
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--lc-fg);
+}
+
+.freshness {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--lc-fg-muted);
+  text-align: right;
+}
+
+.stale {
+  color: var(--lc-accent);
+}
+
+.staleDot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: var(--lc-accent);
+  vertical-align: 0.05rem;
+}
+
+/* Detail: back link, then wordmark at the far end; freshness sits between. */
+.header:has(.back) .freshness {
+  margin-left: auto;
+  margin-right: var(--lc-space-2);
+}
+
+@media (max-width: 719px) {
+  .header {
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
+
+  .header:has(.back) .freshness {
+    order: 4;
+    flex-basis: 100%;
+    margin: 0;
+    text-align: left;
+  }
+
+  .header:has(.back) .identityEnd {
+    margin-left: auto;
+  }
+}

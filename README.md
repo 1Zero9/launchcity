@@ -21,6 +21,15 @@ Make it easy to understand, for any given launch:
 
 Early planning stage. No application architecture, technology stack, or launch-data provider has been selected yet.
 
+## Local review
+
+```sh
+npm ci
+npm run review   # http://localhost:3007 — committed demonstration data, see review/README.md
+```
+
+`npm run dev` runs against the real (local, emulated) cache instead.
+
 ## Audience
 
 Initially general space enthusiasts who want a clear view of upcoming and historical launches. Researchers, journalists, educators, and specialist enthusiasts may be considered as future audiences.

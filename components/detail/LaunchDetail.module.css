@@ -1,198 +1,106 @@
 .detail {
-  width: 100%;
-  max-width: 38rem;
-  /* Defensive: .detail is a flex item of app/page.module.css's .page - a
-     flex item's automatic min-width can otherwise be driven up by a wide
-     descendant (e.g. an image before object-fit constrains it), forcing
-     horizontal overflow regardless of this element's own width/max-width. */
-  min-width: 0;
-  margin-inline: auto;
-  padding: var(--lc-space-3) var(--lc-space-2) var(--lc-space-5);
-}
-
-/* REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
-   wider on desktop specifically to make room for a large image
-   participating alongside the text (Panel C's lower-right Detail
-   treatment), not a conventional narrow single-column article. */
-@media (min-width: 641px) {
-  .detail {
-    max-width: 68rem;
-  }
-}
-
-.back {
-  display: inline-block;
-  font-size: 0.875rem;
-  color: var(--lc-fg-muted);
-  margin-bottom: var(--lc-space-4);
-}
-
-.back:hover,
-.back:focus-visible {
-  color: var(--lc-fg-secondary);
-}
-
-/* Mobile default: plain document flow, DOM order only - identity, then
-   image, then mission/launch/outcome/provenance. Desktop (below)
-   reassigns each child to a named grid area, independent of DOM order,
-   so the image can occupy one tall column beside the text. */
-.layout {
-  display: block;
   min-width: 0;
 }
 
-/* The fallback atmosphere lives here (not only inside LaunchImage's own
-   frame) so an absent image still leaves a deliberate, star-field-adjacent
-   presence in this column - never an empty box - matching the same
-   proportions and hierarchy whether or not a real image exists. */
-.areaMedia {
+/* Identity panel: text left, photo (or horizon) right. */
+.panel {
   position: relative;
-  margin: var(--lc-space-3) 0 var(--lc-space-4);
-  aspect-ratio: 4 / 3;
-  min-width: 0;
-  border-radius: 0.75rem;
+  isolation: isolate;
   overflow: hidden;
-  background: radial-gradient(ellipse 90% 140% at 50% 100%, var(--lc-horizon-soft), var(--lc-bg) 75%);
+  border-radius: 1.25rem;
+  min-height: 27rem;
+  display: flex;
+  background: #02050b;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
 }
 
-@media (min-width: 641px) {
-  .layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    grid-template-areas:
-      "identity media"
-      "mission media"
-      "launch media"
-      "outcome media"
-      "provenance media";
-    column-gap: var(--lc-space-5);
-    align-items: start;
-  }
-
-  .areaIdentity {
-    grid-area: identity;
-  }
-
-  .areaMedia {
-    grid-area: media;
-    margin: 0;
-    aspect-ratio: auto;
-    height: 100%;
-    min-height: 24rem;
-    align-self: stretch;
-  }
-
-  .areaMission {
-    grid-area: mission;
-  }
-
-  .areaLaunch {
-    grid-area: launch;
-  }
-
-  .areaOutcome {
-    grid-area: outcome;
-  }
-
-  .areaProvenance {
-    grid-area: provenance;
-  }
+.scene {
+  --limb-x: 80%;
+  --planet-size: 400%;
+  --limb-top: 80%;
 }
 
 .identity {
   position: relative;
-  margin-bottom: var(--lc-space-4);
-}
-
-/* This is the same marker/rail device from the Horizon, not a new
-   decorative motif - a short fragment of the rail carries forward with
-   the dot, so it still reads as "the point you selected", not a floating
-   dot. Purely decorative (the text below states everything it implies). */
-.marker {
-  position: relative;
-  display: block;
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-  background: var(--lc-accent);
-  margin-bottom: var(--lc-space-2);
-  box-shadow:
-    0 0 0.5rem 0.125rem var(--lc-accent-soft),
-    0 0 1.5rem 0.4rem var(--lc-accent-soft);
-}
-
-.marker::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 3.5rem;
-  height: 1px;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(90deg, transparent, var(--lc-accent) 50%, transparent);
-  opacity: 0.55;
-  z-index: -1;
+  z-index: 5;
+  max-width: 58%;
+  min-width: 0;
+  padding: 2.75rem 3rem 2rem;
 }
 
 .eyebrow {
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--lc-accent);
-  margin-bottom: var(--lc-space-1);
-}
-
-.name {
-  font-size: clamp(1.625rem, 4.5vw, 2.5rem);
-  font-weight: 650;
-  line-height: 1.15;
-  color: var(--lc-fg);
-  letter-spacing: -0.01em;
-}
-
-.time,
-.outcome {
-  margin-top: var(--lc-space-2);
-  font-size: 1.0625rem;
   color: var(--lc-fg-secondary);
+  margin-bottom: 0.75rem;
 }
 
-.confidence {
-  color: var(--lc-accent);
+.title {
+  font-size: clamp(1.875rem, 3vw, 2.625rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--lc-fg);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 }
 
-.subtle {
+.whenRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  margin: 0.9rem 0 1.5rem;
+}
+
+.when {
+  font-size: 1.125rem;
+  color: var(--lc-fg);
+}
+
+.provenance {
+  margin-top: 1.75rem;
+  font-size: 0.75rem;
   color: var(--lc-fg-muted);
 }
 
-.section {
-  margin-top: var(--lc-space-4);
-  padding-top: var(--lc-space-4);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.stale {
+  color: var(--lc-accent);
+}
+
+/* Sections below the panel. */
+.sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 2rem 3rem;
+  padding: 2.25rem 3rem 0;
 }
 
 .heading {
-  font-size: 0.8125rem;
+  display: inline-block;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 2px solid var(--lc-fg);
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lc-fg-muted);
-  margin-bottom: var(--lc-space-2);
+  color: var(--lc-fg);
 }
 
 .body {
   font-size: 1rem;
   line-height: 1.6;
   color: var(--lc-fg-secondary);
-  max-width: 34rem;
+  max-width: 36rem;
 }
 
 .facts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lc-space-3) var(--lc-space-4);
-  margin-top: var(--lc-space-2);
+  gap: 1rem 2.5rem;
+  margin-top: 0.9rem;
 }
 
 .facts dt {
@@ -209,8 +117,46 @@
   color: var(--lc-fg);
 }
 
-.provenance {
-  margin-top: var(--lc-space-5);
-  font-size: 0.75rem;
+.subtle {
   color: var(--lc-fg-muted);
+  font-weight: 400;
+}
+
+/* Not-found (shares the type scale). */
+.notFound {
+  padding: 3rem 0;
+  max-width: 40rem;
+}
+
+.notFoundBack {
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-size: 0.875rem;
+  color: var(--lc-fg-secondary);
+}
+
+@media (max-width: 719px) {
+  .title {
+    font-size: clamp(1.5rem, 6.6vw, 1.875rem);
+  }
+
+  .panel {
+    min-height: 0;
+    border-radius: 1rem;
+  }
+
+  .scene {
+    --limb-x: 70%;
+    --planet-size: 700%;
+    --limb-top: 10.25rem;
+  }
+
+  .identity {
+    max-width: none;
+    padding: 12.75rem 1.25rem 1.5rem;
+  }
+
+  .sections {
+    padding: 1.75rem 0.25rem 0;
+  }
 }

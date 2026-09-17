@@ -1,62 +1,66 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import type { NormalizedLaunch } from "@/lib/contract";
-import { describeLaunchTime, describeOutcome, describeOverdueLaunch, describePastLaunchDate } from "@/lib/timeFormat";
-import { orUnknown } from "@/lib/text";
+import type { RailKind } from "@/lib/timeline";
+import { describeLaunchStatus } from "@/lib/status";
+import { describeShortDate, describeShortTime } from "@/lib/timeFormat";
+import { orUnknown, shortLaunchName } from "@/lib/text";
 import styles from "./HorizonTimeline.module.css";
 
 /**
- * One entry in the secondary sequence - a recently-flown launch (outcome
- * carries the weight), an upcoming one (time carries the weight), or an
- * overdue unresolved launch (2026-09-16 correction - honest "awaiting
- * update" language, never a fabricated outcome or a confident future
- * time). Deliberately lighter than DominantLaunch: name + one line, plus a
- * quiet marker attaching it to the horizon rail. A real interaction
- * target - opens Launch Detail for this specific launch.
- *
- * `distance` (1 = closest to the dominant launch) drives a restrained
- * scale/opacity reduction as items recede further from "next" - never
- * enough to fail contrast, since it's capped and paired with the marker
- * shrinking, not colour.
+ * One slot on the Horizon timeline: short name (2 lines max), compact date,
+ * status in words. The full launch name is the link's accessible name and
+ * is shown on Launch Detail.
  */
 export function SequenceItem({
   launch,
-  variant,
-  distance,
+  kind,
+  column,
+  now,
+  linkQuery,
+  groupLabel,
 }: {
   launch: NormalizedLaunch;
-  variant: "past" | "future" | "overdue";
-  distance: number;
+  kind: RailKind;
+  /** 1-based desktop grid column, so NEXT stays centred however many neighbours exist. */
+  column: number;
+  now: number;
+  linkQuery: string;
+  /** Mobile-only group heading shown before this slot ("Recent" / "Upcoming"). */
+  groupLabel?: string;
 }) {
-  const status =
-    variant === "past"
-      ? `${describeOutcome(launch.outcome)} · ${describePastLaunchDate(launch.time)}`
-      : variant === "overdue" && !launch.liveStatus
-        ? // Overdue and not a known live state (Hold/In Flight have their
-          // own honest liveStatus note, shown via the branch below instead).
-          describeOverdueLaunch(launch.time)
-        : variant === "overdue"
-          ? `${describeLaunchTime(launch.time, launch.schedulingConfidence)} · ${launch.liveStatus}`
-          : describeLaunchTime(launch.time, launch.schedulingConfidence);
-  const name = orUnknown(launch.name);
+  const status = describeLaunchStatus(launch, now);
+  const date =
+    kind === "future" || kind === "next"
+      ? describeShortTime(launch.time, launch.schedulingConfidence)
+      : kind === "overdue"
+        ? `Expected ${describeShortTime(launch.time, launch.schedulingConfidence)}`
+        : describeShortDate(launch.time);
+  const className = kind === "next" ? `${styles.slot} ${styles.slotNext}` : styles.slot;
 
   return (
     <li
-      className={variant === "past" ? styles.pastItem : styles.futureItem}
-      style={{ "--distance": distance } as CSSProperties}
+      className={className}
+      style={{ "--column": column } as CSSProperties}
+      data-group={groupLabel}
+      aria-current={kind === "next" ? "true" : undefined}
     >
-      <Link
-        href={`/launch/${launch.sourceId}`}
-        className={styles.sequenceLink}
-        aria-label={`View details for ${name}`}
-      >
-        <div className={styles.itemContent}>
-          <p className={styles.sequenceName}>{name}</p>
-          <p className={styles.sequenceStatus}>{status}</p>
-        </div>
-      </Link>
-      <span className={styles.itemConnector} aria-hidden="true" />
       <span className={styles.marker} aria-hidden="true" />
+      <Link
+        href={`/launch/${launch.sourceId}${linkQuery}`}
+        className={styles.slotLink}
+        aria-label={`${orUnknown(launch.name)}, ${date}, ${kind === "next" ? "next launch" : status.label}`}
+      >
+        <span className={styles.slotName}>{shortLaunchName(launch.name)}</span>
+        <span className={styles.slotDate}>{date}</span>
+        {kind === "next" ? (
+          <span className={styles.slotNextLabel}>Next</span>
+        ) : (
+          (kind !== "future" || status.tone !== "positive") && (
+            <span className={`${styles.slotStatus} ${styles[`tone_${status.tone}`]}`}>{status.label}</span>
+          )
+        )}
+      </Link>
     </li>
   );
 }

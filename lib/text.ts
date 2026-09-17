@@ -25,13 +25,31 @@ export function humanizeUnknown(value: string | null): string | null {
 export function describeImageCaption(image: {
   classification: "launch" | "vehicle" | "unknown";
   credit: string | null;
+  subject?: string | null;
 }): string {
+  // "Representative" (Experiment 007 recovery): a vehicle-generic photo
+  // must read as NOT being this launch, not merely as "a vehicle".
   const base =
     image.classification === "launch"
       ? "Launch image"
       : image.classification === "vehicle"
-        ? "Vehicle image"
+        ? "Representative vehicle image"
         : "Image via Launch Library 2";
+  const withSubject = image.subject?.trim() ? `${base} · ${image.subject.trim()}` : base;
   const hasRealCredit = Boolean(image.credit && image.credit.trim().toLowerCase() !== "unknown");
-  return hasRealCredit ? `${base} — ${image.credit}` : base;
+  return hasRealCredit ? `${withSubject} — ${image.credit}` : withSubject;
+}
+
+/**
+ * Compact timeline-slot label for LL2's "Vehicle | Payload" naming - the
+ * payload half is the distinguishing part, unless the payload is unknown
+ * (then the vehicle is more useful). The full name is always available on
+ * the slot's accessible label and on Launch Detail.
+ */
+export function shortLaunchName(name: string | null | undefined): string {
+  const full = orUnknown(name);
+  const [vehicle, ...rest] = full.split(" | ");
+  const payload = rest.join(" | ").trim();
+  if (!payload) return full;
+  return /^unknown payload$/i.test(payload) ? vehicle.trim() : payload;
 }

@@ -1,49 +1,48 @@
+import Link from "next/link";
 import type { NormalizedLaunch } from "@/lib/contract";
-import { describeConfidence, describeLaunchTime } from "@/lib/timeFormat";
+import { describeLaunchStatus } from "@/lib/status";
+import { describeLaunchTime } from "@/lib/timeFormat";
 import { orUnknown } from "@/lib/text";
+import { LaunchFacts } from "@/components/launch/LaunchFacts";
+import { StatusPill } from "@/components/launch/StatusPill";
 import styles from "./HorizonTimeline.module.css";
 
 /**
- * The single most important thing on the page: what is the next launch.
- * Every field here is in the frozen "visible immediately" tier - nothing
- * more, nothing less.
- *
- * REVISITED 2026-09-16 (docs/experiments/008-original-horizon-restoration.md):
- * this component is now text-only - the dominant launch's image (when
- * present) is rendered once, as a full-bleed backdrop, by the parent
- * HorizonTimeline, not nested inside this block. That matches Panel C
- * ("The Horizon"): the image is the hero's shared backdrop, not a strip
- * attached to just the dominant item.
+ * The Horizon's focal point (Panel C, top-left): what launches next, when,
+ * how sure we are, and who/what/where. Rendered OUTSIDE the timeline row
+ * (Experiment 007 recovery) so the timeline can never squeeze the title.
  */
-export function DominantLaunch({ launch }: { launch: NormalizedLaunch }) {
-  // Live-status language (Hold/In Flight - 2026-09-16 correction) takes
-  // priority over the ordinary confidence tag when present: it is more
-  // specific and honest about the launch's current state than "Confirmed"
-  // would be for a paused countdown or an already-airborne vehicle.
-  const statusNote = launch.liveStatus ?? describeConfidence(launch.schedulingConfidence);
+export function DominantLaunch({
+  launch,
+  now,
+  linkQuery,
+}: {
+  launch: NormalizedLaunch | null;
+  now: number;
+  linkQuery: string;
+}) {
+  if (!launch) {
+    return (
+      <div className={styles.dominant}>
+        <p className={styles.eyebrow}>Next launch</p>
+        <h1 className={styles.title}>No upcoming launch information available</h1>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dominant}>
-      <p className={styles.dominantEyebrow}>Next launch</p>
-      <h1 className={styles.dominantName}>{orUnknown(launch.name)}</h1>
-      <p className={styles.dominantTime}>
-        {describeLaunchTime(launch.time, launch.schedulingConfidence)}
-        {statusNote && <span className={styles.confidence}> · {statusNote}</span>}
+      <p className={styles.eyebrow}>Next launch</p>
+      <h1 className={styles.title}>
+        <Link href={`/launch/${launch.sourceId}${linkQuery}`} className={styles.titleLink}>
+          {orUnknown(launch.name)}
+        </Link>
+      </h1>
+      <p className={styles.when}>{describeLaunchTime(launch.time, launch.schedulingConfidence)}</p>
+      <p className={styles.pillRow}>
+        <StatusPill status={describeLaunchStatus(launch, now)} />
       </p>
-      <dl className={styles.dominantFacts}>
-        <div>
-          <dt>Provider</dt>
-          <dd>{orUnknown(launch.provider?.name)}</dd>
-        </div>
-        <div>
-          <dt>Vehicle</dt>
-          <dd>{orUnknown(launch.vehicle?.name)}</dd>
-        </div>
-        <div>
-          <dt>Site</dt>
-          <dd>{orUnknown(launch.site?.name)}</dd>
-        </div>
-      </dl>
+      <LaunchFacts launch={launch} />
     </div>
   );
 }

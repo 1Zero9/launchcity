@@ -112,3 +112,62 @@ export function buildLaunchSequence(
     overdue,
   };
 }
+
+/**
+ * The Horizon's visible timeline (Experiment 007 recovery). The 2026-09-16
+ * Panel C attempt rendered EVERY overdue launch plus the hero inside one
+ * flex row - with a three-day-stale cache that meant 13+ slots and a
+ * crushed title. This caps the rail at a fixed, balanced number of slots
+ * either side of NEXT (Panel C: 2 + NEXT + 2), in true chronological order.
+ *
+ * Left side ("Recent"): overdue unresolved launches are chronologically
+ * between flown launches and NEXT, so they belong here - but never so
+ * many that no flown launch remains visible. Overdue launches that don't
+ * fit are returned in `hiddenOverdue` for progressive disclosure, never
+ * silently dropped.
+ */
+export type RailKind = "past" | "overdue" | "next" | "future";
+
+export interface RailSlot {
+  launch: NormalizedLaunch;
+  kind: RailKind;
+  /** 0 for NEXT, 1 for its neighbours, increasing outwards. */
+  distance: number;
+}
+
+export interface HorizonRail {
+  left: RailSlot[];
+  next: NormalizedLaunch | null;
+  right: RailSlot[];
+  hiddenOverdue: NormalizedLaunch[];
+}
+
+export const RAIL_SIDE_SLOTS = 2;
+
+export function buildHorizonRail(
+  launches: NormalizedLaunch[],
+  side: number = RAIL_SIDE_SLOTS,
+  now: number = Date.now(),
+): HorizonRail {
+  // Ask for enough of each group that selection below is never starved.
+  const seq = buildLaunchSequence(launches, side, now);
+  const pastRecentFirst = [...seq.before].reverse();
+
+  const overdueSlots = seq.before.length > 0 ? Math.max(side - 1, 0) : side;
+  const shownOverdue = seq.overdue.slice(0, overdueSlots);
+  const shownPast = pastRecentFirst.slice(0, side - shownOverdue.length);
+
+  const left = [
+    ...shownOverdue.map((launch) => ({ launch, kind: "overdue" as const })),
+    ...shownPast.map((launch) => ({ launch, kind: "past" as const })),
+  ]
+    // Closest to "now" first, so distance counts outwards from NEXT...
+    .sort((a, b) => (launchTimeMs(b.launch) ?? 0) - (launchTimeMs(a.launch) ?? 0))
+    .map((slot, index) => ({ ...slot, distance: index + 1 }))
+    // ...then displayed oldest-first, left to right.
+    .reverse();
+
+  const right = seq.after.slice(0, side).map((launch, index) => ({ launch, kind: "future" as const, distance: index + 1 }));
+
+  return { left, next: seq.dominant, right, hiddenOverdue: seq.overdue.slice(shownOverdue.length) };
+}

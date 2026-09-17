@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Keeps the dev-only Next.js badge out of local review screenshots.
+  devIndicators: false,
 };
 
 export default nextConfig;

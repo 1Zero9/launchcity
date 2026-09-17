@@ -103,3 +103,41 @@ export function describeFreshness(lastSuccessfulRefresh: string | null): string 
   const date = parseUtc(lastSuccessfulRefresh);
   return date ? `As of ${formatDate(date)}, ${formatTime(date)} UTC` : "No data yet";
 }
+
+const SHORT_MONTHS = MONTH_NAMES.map((m) => m.slice(0, 3));
+
+/**
+ * Compact, precision-aware date for a Horizon timeline slot (Experiment 007
+ * recovery) - the same honesty rule as describeLaunchTime, shorter.
+ */
+export function describeShortTime(time: TimePrecision, confidence: SchedulingConfidence): string {
+  const date = parseUtc(time.net);
+  if (confidence === "unknown" || !date) return "Date TBD";
+  const day = `${date.getUTCDate()} ${SHORT_MONTHS[date.getUTCMonth()]}`;
+  switch (time.precision) {
+    case "Quarter":
+      return `Q${Math.floor(date.getUTCMonth() / 3) + 1} ${date.getUTCFullYear()}`;
+    case "Month":
+      return `${SHORT_MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+    case "Hour":
+    case "Minute":
+    case "Second":
+      return `${day} · ${formatTime(date)}`;
+    default:
+      return day;
+  }
+}
+
+/** Compact past/overdue date - day and month only; the status carries the weight. */
+export function describeShortDate(time: TimePrecision): string {
+  const date = parseUtc(time.net);
+  return date ? `${date.getUTCDate()} ${SHORT_MONTHS[date.getUTCMonth()]}` : "Date unknown";
+}
+
+/** Compact freshness for the site header ("As of 17 Sep, 11:52 UTC"). */
+export function describeShortFreshness(lastSuccessfulRefresh: string | null): string {
+  const date = parseUtc(lastSuccessfulRefresh);
+  return date
+    ? `As of ${date.getUTCDate()} ${SHORT_MONTHS[date.getUTCMonth()]}, ${formatTime(date)} UTC`
+    : "No data yet";
+}

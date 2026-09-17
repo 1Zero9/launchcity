@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "review": "LAUNCHCITY_REVIEW_MODE=fixture next dev --port 3007",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

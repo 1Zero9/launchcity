@@ -7,6 +7,9 @@ import {
   describeOutcome,
   describeOverdueLaunch,
   describePastLaunchDate,
+  describeShortDate,
+  describeShortFreshness,
+  describeShortTime,
 } from "./timeFormat";
 
 test("TBD (unknown confidence) never shows a fabricated date", () => {
@@ -87,4 +90,16 @@ test("describeOverdueLaunch: shows honest 'awaiting update' language with the ex
 
 test("describeOverdueLaunch degrades honestly when net is somehow missing", () => {
   assert.equal(describeOverdueLaunch({ net: null, precision: null, windowStart: null, windowEnd: null }), "Awaiting update");
+});
+
+test("describeShortTime keeps precision honest in compact form", () => {
+  const t = (net: string | null, precision: string | null) => ({ net, precision, windowStart: null, windowEnd: null });
+  assert.equal(describeShortTime(t("2026-09-18T03:15:00Z", "Minute"), "confirmed"), "18 Sep · 03:15");
+  assert.equal(describeShortTime(t("2026-09-22T00:00:00Z", "Day"), "estimated"), "22 Sep");
+  assert.equal(describeShortTime(t("2026-10-31T00:00:00Z", "Month"), "estimated"), "Oct 2026");
+  assert.equal(describeShortTime(t("2026-12-31T00:00:00Z", "Quarter"), "estimated"), "Q4 2026");
+  assert.equal(describeShortTime(t("2026-09-30T00:00:00Z", "Month"), "unknown"), "Date TBD");
+  assert.equal(describeShortDate(t("2026-09-13T22:41:00Z", "Minute")), "13 Sep");
+  assert.equal(describeShortFreshness("2026-09-14T18:12:00Z"), "As of 14 Sep, 18:12 UTC");
+  assert.equal(describeShortFreshness(null), "No data yet");
 });

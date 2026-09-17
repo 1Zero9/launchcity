@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import layoutStyles from "./layout.module.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,14 +20,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
-        <header className={layoutStyles.header}>
-          <Link href="/" className={layoutStyles.identity}>
-            LaunchCity
-          </Link>
-        </header>
-        {children}
-      </body>
+      {/* Each page renders its own SiteHeader - it needs that page's data freshness. */}
+      <body>{children}</body>
     </html>
   );
 }
