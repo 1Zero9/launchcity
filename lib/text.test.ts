@@ -54,13 +54,6 @@ test("describeImageCaption: omits the credit suffix entirely when none is suppli
   assert.equal(describeImageCaption({ classification: "vehicle", credit: null }), "Representative vehicle image");
 });
 
-test("describeImageCaption: states what a representative photo actually shows", () => {
-  assert.equal(
-    describeImageCaption({ classification: "vehicle", credit: "NASA/Bill Ingalls", subject: "Falcon 9 before Demo-2, 2020" }),
-    "Representative vehicle image · Falcon 9 before Demo-2, 2020 — NASA/Bill Ingalls",
-  );
-});
-
 test("shortLaunchName: payload half of LL2's 'Vehicle | Payload' name, vehicle when payload is unknown", () => {
   assert.equal(shortLaunchName("Falcon 9 Block 5 | Transporter-17 (Dedicated SSO Rideshare)"), "Transporter-17 (Dedicated SSO Rideshare)");
   assert.equal(shortLaunchName("Kuaizhou 11 | Unknown Payload"), "Kuaizhou 11");

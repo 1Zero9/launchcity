@@ -25,7 +25,6 @@ export function humanizeUnknown(value: string | null): string | null {
 export function describeImageCaption(image: {
   classification: "launch" | "vehicle" | "unknown";
   credit: string | null;
-  subject?: string | null;
 }): string {
   // "Representative" (Experiment 007 recovery): a vehicle-generic photo
   // must read as NOT being this launch, not merely as "a vehicle".
@@ -35,9 +34,8 @@ export function describeImageCaption(image: {
       : image.classification === "vehicle"
         ? "Representative vehicle image"
         : "Image via Launch Library 2";
-  const withSubject = image.subject?.trim() ? `${base} · ${image.subject.trim()}` : base;
   const hasRealCredit = Boolean(image.credit && image.credit.trim().toLowerCase() !== "unknown");
-  return hasRealCredit ? `${withSubject} — ${image.credit}` : withSubject;
+  return hasRealCredit ? `${base} — ${image.credit}` : base;
 }
 
 /**

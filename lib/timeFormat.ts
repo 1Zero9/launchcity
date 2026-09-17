@@ -113,7 +113,7 @@ const SHORT_MONTHS = MONTH_NAMES.map((m) => m.slice(0, 3));
 export function describeShortTime(time: TimePrecision, confidence: SchedulingConfidence): string {
   const date = parseUtc(time.net);
   if (confidence === "unknown" || !date) return "Date TBD";
-  const day = `${date.getUTCDate()} ${SHORT_MONTHS[date.getUTCMonth()]}`;
+  const day = `${SHORT_MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}`;
   switch (time.precision) {
     case "Quarter":
       return `Q${Math.floor(date.getUTCMonth() / 3) + 1} ${date.getUTCFullYear()}`;
@@ -131,13 +131,36 @@ export function describeShortTime(time: TimePrecision, confidence: SchedulingCon
 /** Compact past/overdue date - day and month only; the status carries the weight. */
 export function describeShortDate(time: TimePrecision): string {
   const date = parseUtc(time.net);
-  return date ? `${date.getUTCDate()} ${SHORT_MONTHS[date.getUTCMonth()]}` : "Date unknown";
+  return date ? `${SHORT_MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}` : "Date unknown";
 }
 
 /** Compact freshness for the site header ("As of 17 Sep, 11:52 UTC"). */
 export function describeShortFreshness(lastSuccessfulRefresh: string | null): string {
   const date = parseUtc(lastSuccessfulRefresh);
   return date
-    ? `As of ${date.getUTCDate()} ${SHORT_MONTHS[date.getUTCMonth()]}, ${formatTime(date)} UTC`
+    ? `as of ${SHORT_MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${formatTime(date)} UTC`
     : "No data yet";
+}
+
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/**
+ * Panel C's headline date ("Tuesday, 3 December 2024 · 19:42 UTC"), with
+ * the same precision honesty as describeLaunchTime - coarse precision
+ * falls back to that function unchanged.
+ */
+export function describeLaunchTimeLong(time: TimePrecision, confidence: SchedulingConfidence): string {
+  const date = parseUtc(time.net);
+  if (confidence === "unknown" || !date) return describeLaunchTime(time, confidence);
+  const day = `${WEEKDAYS[date.getUTCDay()]}, ${formatDate(date)}`;
+  switch (time.precision) {
+    case "Hour":
+    case "Minute":
+    case "Second":
+      return `${day} · ${formatTime(date)} UTC`;
+    case "Day":
+      return day;
+    default:
+      return describeLaunchTime(time, confidence);
+  }
 }

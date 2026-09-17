@@ -8,7 +8,8 @@ import styles from "./launch.module.css";
  * mid-designation.
  */
 export function LaunchTitle({ name }: { name: string | null | undefined }) {
-  const words = orUnknown(name).split(" ");
+  // LL2's " | " separator stays with the word before it, so no line starts with "|".
+  const words = orUnknown(name).replace(/ \| /g, "\u00a0| ").split(" ");
   return (
     <>
       {words.map((word, i) => (

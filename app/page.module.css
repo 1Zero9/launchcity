@@ -4,5 +4,5 @@
   max-width: var(--lc-page-max);
   min-width: 0;
   margin-inline: auto;
-  padding: 0 var(--lc-gutter) var(--lc-space-4);
+  padding: 1rem var(--lc-gutter) var(--lc-space-4);
 }

@@ -1,17 +1,13 @@
 import Link from "next/link";
 import type { NormalizedLaunch } from "@/lib/contract";
 import { describeLaunchStatus } from "@/lib/status";
-import { describeLaunchTime } from "@/lib/timeFormat";
+import { describeLaunchTimeLong } from "@/lib/timeFormat";
 import { LaunchTitle } from "@/components/launch/LaunchTitle";
 import { LaunchFacts } from "@/components/launch/LaunchFacts";
 import { StatusPill } from "@/components/launch/StatusPill";
 import styles from "./HorizonTimeline.module.css";
 
-/**
- * The Horizon's focal point (Panel C, top-left): what launches next, when,
- * how sure we are, and who/what/where. Rendered OUTSIDE the timeline row
- * (Experiment 007 recovery) so the timeline can never squeeze the title.
- */
+/** Panel C, top-left: what launches next, when, how sure we are, and who/what/where. */
 export function DominantLaunch({
   launch,
   now,
@@ -38,7 +34,7 @@ export function DominantLaunch({
           <LaunchTitle name={launch.name} />
         </Link>
       </h1>
-      <p className={styles.when}>{describeLaunchTime(launch.time, launch.schedulingConfidence)}</p>
+      <p className={styles.when}>{describeLaunchTimeLong(launch.time, launch.schedulingConfidence)}</p>
       <p className={styles.pillRow}>
         <StatusPill status={describeLaunchStatus(launch, now)} />
       </p>

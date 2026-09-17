@@ -32,6 +32,8 @@ export interface LaunchData {
   snapshot: CacheSnapshot<NormalizedLaunch[]> | null;
   now: number;
   review: ReviewInfo | null;
+  /** False only in the review "no-image" scenario, to exercise every fallback. */
+  imagesEnabled: boolean;
 }
 
 export function parseScenario(value: string | string[] | undefined): ReviewScenario {
@@ -46,9 +48,10 @@ export async function loadLaunchData(scenarioParam?: string | string[]): Promise
     return {
       ...buildReviewData(scenario),
       review: { scenario, query: scenario === "default" ? "" : `?review=${scenario}` },
+      imagesEnabled: scenario !== "no-image",
     };
   }
 
   const store = getCacheStore<NormalizedLaunch[]>();
-  return { snapshot: await store.read(LAUNCHES_CACHE_KEY), now: Date.now(), review: null };
+  return { snapshot: await store.read(LAUNCHES_CACHE_KEY), now: Date.now(), review: null, imagesEnabled: true };
 }

@@ -14,7 +14,8 @@ npm run review          # http://localhost:3007
 | No imagery (fallback) | http://localhost:3007/?review=no-image |
 | Stale data | http://localhost:3007/?review=stale |
 | Detail, with imagery, long name | http://localhost:3007/launch/review-f9-transporter |
-| Detail, second image | http://localhost:3007/launch/review-f9-starlink |
+| Detail, second Falcon 9 | http://localhost:3007/launch/review-f9-starlink |
+| Credits | http://localhost:3007/credits |
 | Detail, no image, overdue | http://localhost:3007/launch/review-soyuz-progress |
 | Detail, Hold | http://localhost:3007/launch/review-vega-hold |
 | Detail, In Flight | http://localhost:3007/launch/review-kuaizhou-inflight |
@@ -30,7 +31,7 @@ look the same on every run and match
   `LAUNCHCITY_REVIEW_MODE=fixture` (set by `npm run review`). See
   `lib/launchData.ts`.
 - Next.js inlines `NODE_ENV` at build time, so `next build` and the
-  OpenNext build contain no fixture data, launch names or images. This was
+  OpenNext build contain no fixture data or launch names. This was
   verified by grepping `.next/` (excluding `.next/dev`) and `.open-next/`.
   Only the banner's static wording is bundled, and it never renders there.
   `next start` with `LAUNCHCITY_REVIEW_MODE=fixture` set does not activate
@@ -49,31 +50,26 @@ real "Vehicle | Payload" format, but the dates, statuses and details are
 demonstration values, not a record of real launches. The set covers:
 
 - a long name (NEXT);
+- Falcon 9 launches (vehicle image) and other vehicles (horizon fallback);
 - Hold and In Flight;
 - an overdue launch that is awaiting an update;
 - success and partial-failure outcomes;
 - Day, Month and TBD date precision;
-- launches with and without images.
 
-## Image provenance
+## Images
 
-Both images are **vehicle-generic**. They are real NASA photographs of a
-Falcon 9 from earlier NASA missions, attached only to Falcon 9 fixture
-launches. Each is captioned "Representative vehicle image", followed by what
-it actually shows and the credit. Neither is presented as the launch it sits
-beside.
+Images are **not** part of the review data. Every page, in review mode and
+with real data alike, draws from the curated public-source library in
+`lib/imagery.ts`. The Credits page (`/credits`) lists each image with its
+credit, source, licence and edits. Images carry no inline captions, per
+founder direction of 2026-09-17.
 
-| File | NASA ID | Shows | Credit |
-|---|---|---|---|
-| `assets/nasa-falcon9-demo2-night-NHQ202005290002.jpg` | NHQ202005290002 | Falcon 9 / Crew Dragon at LC-39A before Demo-2, 29 May 2020 (cropped from the right, resized) | NASA/Bill Ingalls |
-| `assets/nasa-falcon9-crew2-sunrise-NHQ202104220005.jpg` | NHQ202104220005 | Falcon 9 / Crew Dragon at LC-39A before Crew-2, 22 Apr 2021 (resized) | NASA/Joel Kowsky |
-
-- **Source:** NASA Image and Video Library (images.nasa.gov), downloaded
-  once on 2026-09-17. They are not hotlinked.
-- **Usage basis:** NASA-staff photography is generally not subject to
-  copyright in the US. NASA's media guidelines ask for acknowledgement and
-  no implied endorsement. Both images carry a NASA photographer credit.
-  NASA and SpaceX insignia are visible in the photos only as historical
-  depiction, not as endorsement.
-- **Production use** of these or any other images is **not** authorised by
-  this review mode. It remains a founder decision.
+- **Horizon backdrop:** NASA ISS photograph iss065e018683 (orbital sunrise),
+  mirrored and cropped.
+- **Falcon 9 launches:** NASA/Joel Kowsky photograph NHQ202104220005, used on
+  Launch Detail as a representative vehicle image. Other vehicles fall back
+  to the Earth horizon.
+- The files are site assets in `public/images/`, so they ship with
+  production builds. LL2 image ingestion is still disabled (`image: null`).
+- The `?review=no-image` scenario turns every photo off, to show the pure
+  CSS fallback.

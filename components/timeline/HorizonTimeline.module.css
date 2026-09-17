@@ -1,96 +1,138 @@
-/* The Horizon hero (Experiment 007 recovery). Two zones on one surface:
-   the next launch (top) and the timeline (bottom, on the planet). The
-   Earth's limb (Scene.module.css) sits between them. */
+/* The Horizon card (Panel C). Layers, back to front: CSS sky/planet
+   fallback -> Earth photo -> legibility shade -> header, hero, timeline. */
 
-.hero {
+.card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-radius: 1.25rem;
-  min-height: clamp(36rem, calc(100dvh - 7rem), 44rem);
   display: flex;
-  background: #02050b;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  flex-direction: column;
+  min-height: clamp(40rem, calc(100dvh - 3.5rem), 50rem);
+  border-radius: 1.25rem;
+  background: #02040a;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
 .scene {
-  --limb-x: 62%;
-  /* A shallow curve that stays entirely above the timeline band. */
-  --planet-size: 620%;
-  --limb-top: calc(100% - 15rem);
+  --limb-x: 72%;
+  --limb-top: 72%;
+  --planet-size: 900%;
 }
 
-.content {
+/* The photo's limb sits ~43% down the image; offsetting the image keeps
+   the horizon just below the hero text and above the timeline. */
+.earth {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 27%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 72% 30%;
+  /* Fade in from the dark sky above - no visible top edge. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(3, 8, 20, 0) 0%, rgba(3, 8, 20, 0) 58%, rgba(10, 28, 60, 0.35) 70%, rgba(3, 8, 20, 0.85) 100%),
+    radial-gradient(ellipse 60% 70% at 10% 30%, rgba(3, 8, 20, 0.55), transparent 70%),
+    linear-gradient(180deg, rgba(20, 40, 80, 0.35), transparent 30%);
+}
+
+.body {
   position: relative;
   z-index: 5;
-  flex: 1;
-  min-width: 0;
   display: flex;
-  flex-direction: column;
-  padding: 3rem 3rem 1.75rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 2.75rem 2.5rem 0;
 }
 
 /* ---- Next launch ---- */
 
 .dominant {
-  max-width: 36rem;
+  max-width: 44rem;
   min-width: 0;
 }
 
 .eyebrow {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--lc-fg-secondary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .title {
-  font-size: clamp(2rem, 2.6vw, 2.25rem);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.015em;
+  font-family: var(--lc-serif);
+  font-size: clamp(2.25rem, 3.4vw, 3rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
   color: var(--lc-fg);
   text-wrap: balance;
   overflow-wrap: break-word;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
 }
 
 .titleLink:hover,
 .titleLink:focus-visible {
-  color: #ffe2bf;
+  color: #ffe6c7;
 }
 
 .when {
-  margin-top: 0.9rem;
-  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  margin-top: 0.8rem;
+  font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
   color: var(--lc-fg);
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
 
 .pillRow {
-  margin: 0.8rem 0 1.4rem;
+  margin: 0.9rem 0 1.4rem;
+}
+
+.tagline {
+  flex: 0 0 auto;
+  margin: 5.5rem 4% 0 0;
+  font-family: var(--lc-serif);
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+  line-height: 1.15;
+  text-align: center;
+  color: #f4f1ea;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
 }
 
 /* ---- Timeline ---- */
 
 .rail {
+  position: relative;
+  z-index: 5;
   margin-top: auto;
-  padding-top: 3.5rem;
+  padding: 2rem 2.5rem 1.1rem;
 }
 
 .railHead {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.9rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--lc-fg-secondary);
+  margin-bottom: 1rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--lc-fg);
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.9), 0 1px 12px rgba(0, 0, 0, 0.9);
 }
 
 .railList {
-  --marker-row: 1.5rem;
+  --marker-row: 2rem;
   position: relative;
   list-style: none;
   display: grid;
@@ -98,15 +140,22 @@
   column-gap: 1rem;
 }
 
-/* The rail line through every marker. */
+/* Edge-to-edge line through the markers, brightest at NEXT. */
 .railList::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  left: -2.5rem;
+  right: -2.5rem;
   top: calc(var(--marker-row) / 2);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(190, 215, 255, 0.45) 10%, rgba(190, 215, 255, 0.45) 90%, transparent);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(200, 220, 255, 0.35),
+    rgba(200, 220, 255, 0.5) 30%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(200, 220, 255, 0.5) 70%,
+    rgba(200, 220, 255, 0.35)
+  );
 }
 
 .slot {
@@ -120,37 +169,36 @@
 }
 
 .marker {
-  position: relative;
   display: grid;
   place-items: center;
   height: var(--marker-row);
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.75rem;
 }
 
 .marker::before {
   content: "";
-  width: 0.7rem;
-  height: 0.7rem;
+  width: 0.9rem;
+  height: 0.9rem;
   border-radius: 50%;
-  border: 1.5px solid rgba(215, 230, 255, 0.85);
-  background: #0a1730;
+  border: 2px solid rgba(220, 232, 255, 0.85);
+  background: radial-gradient(circle, rgba(220, 232, 255, 0.95) 0 28%, #0b1a33 34%);
 }
 
 .slotNext .marker::before {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 2rem;
+  height: 2rem;
   border: 3px solid #fff;
-  background: rgba(255, 255, 255, 0.25);
+  background: radial-gradient(circle, #ffffff 0 52%, rgba(255, 255, 255, 0.15) 56%);
   box-shadow:
-    0 0 0 4px rgba(255, 255, 255, 0.12),
-    0 0 18px 6px rgba(160, 210, 255, 0.55);
+    0 0 0 3px rgba(255, 255, 255, 0.18),
+    0 0 22px 8px rgba(190, 220, 255, 0.55);
 }
 
 .slotLink {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
   max-width: 100%;
   border-radius: 0.3rem;
 }
@@ -161,28 +209,26 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1.3;
-  color: var(--lc-fg-secondary);
+  color: var(--lc-fg);
   overflow-wrap: anywhere;
 }
 
 .slotLink:hover .slotName,
 .slotLink:focus-visible .slotName {
-  color: var(--lc-fg);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .slotNext .slotName {
-  font-size: 1rem;
-  font-weight: 650;
-  color: var(--lc-fg);
+  font-size: 1.0625rem;
+  font-weight: 600;
 }
 
 .slotDate {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--lc-fg-muted);
 }
 
@@ -192,13 +238,12 @@
 
 .slotStatus,
 .slotNextLabel {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
 .slotNextLabel {
   color: var(--lc-fg);
-  letter-spacing: 0.04em;
 }
 
 .tone_positive { color: var(--lc-positive); }
@@ -209,9 +254,26 @@
 .tone_live { color: var(--lc-horizon); }
 .tone_neutral { color: var(--lc-fg-muted); }
 
-/* Progressive disclosure for overdue launches that don't fit on the rail. */
+.railFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.asOf {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--lc-fg-muted);
+  text-align: right;
+}
+
+.stale {
+  color: var(--lc-accent);
+}
+
 .more {
-  margin-top: 1.1rem;
   font-size: 0.8125rem;
   color: var(--lc-fg-secondary);
 }
@@ -219,7 +281,7 @@
 .more summary {
   cursor: pointer;
   width: fit-content;
-  color: var(--lc-accent);
+  color: var(--lc-pending);
 }
 
 .more ul {
@@ -239,29 +301,46 @@
   color: var(--lc-fg-muted);
 }
 
-/* ---- Mobile: hero text first, then a short vertical rail ---- */
+/* ---- Mobile: horizon photo band, then the next launch, then a short vertical timeline ---- */
 @media (max-width: 719px) {
-  .hero {
+  .card {
     min-height: 0;
     border-radius: 1rem;
   }
 
   .scene {
-    --limb-x: 62%;
-    --planet-size: 700%;
-    --limb-top: 10.25rem;
+    --limb-x: 66%;
+    --limb-top: 9.5rem;
+    --planet-size: 900%;
   }
 
-  .content {
-    padding: 12.75rem 1.25rem 1.5rem;
+  .earth {
+    top: 0;
+    height: 17rem;
+    object-position: 66% 40%;
+    -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+  }
+
+  .shade {
+    background:
+      linear-gradient(180deg, rgba(3, 8, 20, 0.35) 0, transparent 5rem, transparent 9rem, #03081a 17rem);
+  }
+
+  .body {
+    padding: 8.5rem 1.25rem 0;
+  }
+
+  .tagline {
+    display: none;
   }
 
   .title {
-    font-size: clamp(1.5rem, 6.6vw, 1.875rem);
+    font-size: clamp(1.625rem, 7vw, 2rem);
   }
 
   .rail {
-    padding-top: 2rem;
+    padding: 2rem 1.25rem 1.25rem;
   }
 
   .railHead {
@@ -279,9 +358,9 @@
     right: auto;
     top: 0.5rem;
     bottom: 0.5rem;
-    width: 1px;
+    width: 2px;
     height: auto;
-    background: linear-gradient(180deg, transparent, rgba(190, 215, 255, 0.45) 8%, rgba(190, 215, 255, 0.45) 92%, transparent);
+    background: linear-gradient(180deg, transparent, rgba(200, 220, 255, 0.45) 8%, rgba(200, 220, 255, 0.45) 92%, transparent);
   }
 
   .slot {
@@ -292,7 +371,6 @@
     column-gap: 0.9rem;
   }
 
-  /* Group headings keep past -> next -> future readable on one column. */
   .slot[data-group]::before {
     content: attr(data-group);
     flex-basis: 100%;
@@ -317,26 +395,30 @@
     gap: 0.1rem;
   }
 
-  .slotName {
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-  }
-
   .slotNext .slotLink {
     padding: 0.55rem 0.75rem;
     margin: -0.55rem 0 0 -0.4rem;
     border-radius: 0.6rem;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
   }
 
   .slotNext .marker::before {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.2rem;
+    height: 1.2rem;
     border-width: 2.5px;
   }
 
   .slotNextLabel {
-    display: none; /* the "Next" group heading already says it */
+    display: none;
+  }
+
+  .railFoot {
+    flex-direction: column;
+  }
+
+  .asOf {
+    margin-left: 0;
+    text-align: left;
   }
 }

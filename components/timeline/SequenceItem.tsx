@@ -56,7 +56,9 @@ export function SequenceItem({
         {kind === "next" ? (
           <span className={styles.slotNextLabel}>Next</span>
         ) : (
-          (kind !== "future" || status.tone !== "positive") && (
+          // Panel C: an upcoming launch shows only its date unless something is
+          // uncertain; flown/overdue/live launches always state their status.
+          (kind !== "future" || (status.tone !== "positive" && status.label !== "Date not set")) && (
             <span className={`${styles.slotStatus} ${styles[`tone_${status.tone}`]}`}>{status.label}</span>
           )
         )}

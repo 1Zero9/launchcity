@@ -82,8 +82,39 @@ Next.js allows one dev server per project directory.
 - Timeline slots show the payload half of long LL2 names ("Transporter-17 …"); the full name is on the hero and on Detail.
 - The desktop hero title is 36px, so a 60-character real name fits in two lines within about half the hero.
 
+## Founder review 1 (2026-09-17)
+
+**Founder feedback:**
+
+1. "Not quite, it's not what was envisioned in the brief."
+2. "Images should be taken from public sources, and credit listed on a
+   separate page, same for any credits."
+3. "Not ready yet."
+
+**Changes made in response, taken from Panel C:**
+
+- **Horizon:** a photographic Earth-at-sunrise backdrop (NASA ISS), filling
+  the whole card.
+- **Type:** a serif display face (Newsreader) for titles, and the italic
+  tagline "Next to a brighter tomorrow."
+- **Header:** inside the card, with the "as of" time and a menu linking to
+  Timeline and Credits.
+- **Status and dates:**
+  - filled status pills;
+  - headline dates like "Thursday, 17 September 2026 · 18:42 UTC";
+  - timeline dates like "Sep 13".
+- **Timeline:** the line now runs edge to edge, with ringed markers.
+- **Detail:**
+  - tabs: Outcome (flown launches only), Mission, Payload, Provider,
+    Vehicle, Location;
+  - a representative vehicle photo running off the right edge, toned
+    night-blue.
+- **Images:** a public-source image library (`lib/imagery.ts`) and a
+  `/credits` page, with no inline captions. Captions were removed.
+- **Review data:** the fixture no longer carries images.
+
 ## Unresolved (founder authority)
 
 - Visual acceptance of this composition.
-- Production imagery: source, licence and attribution. Production still maps `image: null`.
+- Production imagery: public-source library and credits page adopted on this branch (founder direction); LL2 image ingestion still disabled.
 - Merge and deployment.

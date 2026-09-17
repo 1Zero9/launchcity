@@ -1,0 +1,96 @@
+.card {
+  position: relative;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, #0b1b36, #050b18 60%);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.content {
+  padding: 2rem 2.5rem 2.5rem;
+  max-width: 52rem;
+}
+
+.title {
+  font-family: var(--lc-serif);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 4vw, 3rem);
+}
+
+.section {
+  margin-top: 2.25rem;
+  color: var(--lc-fg-secondary);
+  line-height: 1.6;
+}
+
+.section h2 {
+  display: inline-block;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--lc-fg);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--lc-fg);
+}
+
+.section a {
+  color: var(--lc-fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.note {
+  color: var(--lc-fg-muted);
+  margin-top: 0.5rem;
+}
+
+.images {
+  list-style: none;
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.images li {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.thumb {
+  width: 9rem;
+  height: 6.5rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.depicts {
+  color: var(--lc-fg);
+  margin-bottom: 0.4rem;
+}
+
+.images dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.15rem 1rem;
+  font-size: 0.875rem;
+}
+
+.images dt {
+  color: var(--lc-fg-muted);
+}
+
+@media (max-width: 719px) {
+  .content {
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  .images li {
+    grid-template-columns: 1fr;
+  }
+
+  .thumb {
+    width: 100%;
+    height: 10rem;
+  }
+}

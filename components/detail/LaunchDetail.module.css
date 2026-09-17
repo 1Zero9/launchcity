@@ -1,99 +1,159 @@
-.detail {
-  min-width: 0;
-}
+/* Launch Detail card (Panel C lower view). */
 
-/* Identity panel: text left, photo (or horizon) right. */
-.panel {
+.card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  min-height: 34rem;
   border-radius: 1.25rem;
-  min-height: 27rem;
-  display: flex;
-  background: #02050b;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  background: #02040a;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
 .scene {
   --limb-x: 80%;
-  --planet-size: 400%;
-  --limb-top: 80%;
+  --limb-top: 94%;
+  --planet-size: 700%;
 }
 
-.identity {
+/* Representative vehicle photo, running off the right edge. */
+.vehicle {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 44%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 24%);
+}
+
+.vehicleImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 22% 28%;
+  display: block;
+}
+
+/* Tones the dawn photo toward Panel C's night blue (the file is unedited). */
+.vehicleTone {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(40, 80, 150, 0.9), rgba(20, 50, 110, 0.9));
+  mix-blend-mode: color;
+}
+
+.vehicle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3, 8, 20, 0.25), transparent 30%, transparent 65%, rgba(3, 8, 20, 0.8));
+}
+
+/* Fallback backdrop: Earth's horizon. */
+.earth {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 30%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 80% 30%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 90% at 15% 40%, rgba(3, 8, 20, 0.65), transparent 75%),
+    linear-gradient(180deg, rgba(20, 40, 80, 0.35), transparent 35%, transparent 70%, rgba(3, 8, 20, 0.7));
+}
+
+.content {
   position: relative;
   z-index: 5;
-  max-width: 58%;
+  max-width: 62%;
   min-width: 0;
-  padding: 2.75rem 3rem 2rem;
-}
-
-.eyebrow {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--lc-fg-secondary);
-  margin-bottom: 0.75rem;
+  padding: 2rem 2.5rem 2.25rem;
 }
 
 .title {
-  font-size: clamp(1.875rem, 3vw, 2.625rem);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.015em;
+  font-family: var(--lc-serif);
+  font-size: clamp(2.125rem, 3.4vw, 3rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
   color: var(--lc-fg);
   text-wrap: balance;
   overflow-wrap: break-word;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
 }
 
 .whenRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.9rem;
-  margin: 0.9rem 0 1.5rem;
+  gap: 0.5rem 1rem;
+  margin: 0.8rem 0 1.4rem;
 }
 
 .when {
-  font-size: 1.125rem;
+  font-size: 1.1875rem;
   color: var(--lc-fg);
 }
 
-.provenance {
-  margin: 2.5rem 3rem 0;
-  font-size: 0.75rem;
-  color: var(--lc-fg-muted);
+/* Tabs */
+.tabs {
+  margin-top: 2rem;
 }
 
-.stale {
-  color: var(--lc-accent);
+.tabList {
+  display: flex;
+  gap: 0.25rem 2rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  scrollbar-width: none;
 }
 
-/* Sections below the panel. */
-.sections {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-  gap: 2rem 3rem;
-  padding: 2.25rem 3rem 0;
+.tab {
+  flex: 0 0 auto;
+  padding: 0.5rem 0 0.6rem;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--lc-fg-secondary);
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
-.heading {
-  display: inline-block;
-  padding-bottom: 0.35rem;
-  margin-bottom: 0.9rem;
-  border-bottom: 2px solid var(--lc-fg);
-  font-size: 0.9375rem;
+.tab[aria-selected="true"] {
+  color: var(--lc-fg);
   font-weight: 600;
+  border-bottom-color: var(--lc-fg);
+}
+
+.tab:hover {
   color: var(--lc-fg);
+}
+
+.tabPanel {
+  padding-top: 1.1rem;
+  min-height: 6rem;
 }
 
 .body {
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.6;
   color: var(--lc-fg-secondary);
-  max-width: 36rem;
+  max-width: 38rem;
 }
 
 .facts {
@@ -117,9 +177,12 @@
   color: var(--lc-fg);
 }
 
-.subtle {
+.provenance {
   color: var(--lc-fg-muted);
-  font-weight: 400;
+}
+
+.stale {
+  color: var(--lc-accent);
 }
 
 /* Not-found (shares the type scale). */
@@ -139,32 +202,62 @@
   color: var(--lc-fg-secondary);
 }
 
-@media (max-width: 719px) {
-  .title {
-    font-size: clamp(1.5rem, 6.6vw, 1.875rem);
-  }
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lc-fg-secondary);
+  margin-bottom: 0.75rem;
+}
 
-  .panel {
+@media (max-width: 719px) {
+  .card {
     min-height: 0;
     border-radius: 1rem;
   }
 
   .scene {
     --limb-x: 70%;
-    --planet-size: 700%;
-    --limb-top: 10.25rem;
+    --limb-top: 9rem;
+    --planet-size: 900%;
   }
 
-  .identity {
+  .vehicle {
+    left: 0;
+    width: auto;
+    bottom: auto;
+    height: 17rem;
+    -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 40%, transparent 100%);
+  }
+
+  .vehicleImg {
+    object-position: 35% 25%;
+  }
+
+  .earth {
+    top: 0;
+    height: 15rem;
+    object-position: 66% 40%;
+    -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+  }
+
+  .shade {
+    background: linear-gradient(180deg, rgba(3, 8, 20, 0.35) 0, transparent 5rem, rgba(3, 8, 20, 0.3) 9rem, #03081a 16rem);
+  }
+
+  .content {
     max-width: none;
-    padding: 12.75rem 1.25rem 1.5rem;
+    padding: 9rem 1.25rem 1.5rem;
   }
 
-  .sections {
-    padding: 1.75rem 0.25rem 0;
+  .title {
+    font-size: clamp(1.625rem, 7vw, 2rem);
   }
 
-  .provenance {
-    margin: 2rem 0.25rem 0;
+  .tabList {
+    gap: 1.4rem;
   }
 }

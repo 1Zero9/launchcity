@@ -98,13 +98,8 @@ export interface LaunchImage {
   url: string;
   /** Attribution text, shown honestly when present. Never invented when absent. */
   credit: string | null;
-  /**
-   * Where this image came from, for provenance - "ll2" is the only
-   * production source. "review-fixture" is the committed, development-only
-   * review dataset (review/fixture.ts, Experiment 007 recovery) and can
-   * never reach a production build (lib/launchData.ts).
-   */
-  source: "ll2" | "review-fixture";
+  /** Where this image came from, for provenance - "ll2" is the only production source. */
+  source: "ll2";
   /**
    * Honest classification of what this image actually depicts, so the UI
    * never claims more than the evidence supports (2026-09-16 Horizon
@@ -116,12 +111,6 @@ export interface LaunchImage {
    * compare it against) - the honest default.
    */
   classification: "launch" | "vehicle" | "unknown";
-  /**
-   * Optional plain-language statement of what the photo actually shows
-   * (e.g. "Falcon 9 before Demo-2, 2020"), so a representative image is
-   * never mistaken for the launch it sits beside. Never invented.
-   */
-  subject?: string | null;
 }
 
 export interface Mission {

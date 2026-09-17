@@ -1,8 +1,6 @@
 import type { CacheSnapshot } from "@/lib/cache";
-import type { LaunchImage, NormalizedLaunch } from "@/lib/contract";
+import type { NormalizedLaunch } from "@/lib/contract";
 import type { ReviewScenario } from "@/lib/launchData";
-import nightPad from "./assets/nasa-falcon9-demo2-night-NHQ202005290002.jpg";
-import sunrisePad from "./assets/nasa-falcon9-crew2-sunrise-NHQ202104220005.jpg";
 
 /**
  * LOCAL REVIEW DATA ONLY - DEMONSTRATION, NOT LIVE LAUNCHES.
@@ -15,30 +13,12 @@ import sunrisePad from "./assets/nasa-falcon9-crew2-sunrise-NHQ202104220005.jpg"
  * coarse/TBD dates and launches without imagery. Dates are illustrative
  * and relative to a frozen review clock (REVIEW_NOW).
  *
- * Images (review/README.md has full provenance): real NASA photographs of
- * a Falcon 9 from earlier NASA missions, attached only to Falcon 9 launches
- * and labelled "Representative vehicle image" with what they actually
- * show - never presented as the launch they sit beside.
+ * Images are not part of this data: pages use the curated public-source
+ * library (lib/imagery.ts), exactly as they do with real data.
  */
 export const REVIEW_NOW = Date.parse("2026-09-17T12:00:00Z");
 const FRESH_REFRESH = "2026-09-17T11:52:00Z";
 const STALE_REFRESH = "2026-09-14T18:12:00Z";
-
-const NIGHT_PAD: LaunchImage = {
-  url: nightPad.src,
-  credit: "NASA/Bill Ingalls",
-  source: "review-fixture",
-  classification: "vehicle",
-  subject: "Falcon 9 at LC-39A before Demo-2, 2020",
-};
-
-const SUNRISE_PAD: LaunchImage = {
-  url: sunrisePad.src,
-  credit: "NASA/Joel Kowsky",
-  source: "review-fixture",
-  classification: "vehicle",
-  subject: "Falcon 9 at LC-39A before Crew-2, 2021",
-};
 
 const SPACEX = { sourceId: 121, name: "SpaceX", type: "Commercial" };
 const F9 = { sourceId: 164, name: "Falcon 9", family: "Falcon" };
@@ -146,7 +126,6 @@ const LAUNCHES: NormalizedLaunch[] = [
     site: { sourceId: 11, name: "Vandenberg SFB, CA, USA", timezone: null, countryCode: "USA" },
     pad: { sourceId: 16, name: "Space Launch Complex 4E" },
     mission: { sourceId: null, name: "Transporter-17", description: "A dedicated rideshare carrying dozens of small satellites and hosted payloads for commercial and government customers to sun-synchronous orbit.", type: "Dedicated Rideshare", orbit: "Sun-Synchronous Orbit", payloadSummary: null },
-    image: NIGHT_PAD,
   }),
   launch({
     sourceId: "review-f9-starlink",
@@ -157,7 +136,6 @@ const LAUNCHES: NormalizedLaunch[] = [
     site: { sourceId: 27, name: "Kennedy Space Center, FL, USA", timezone: null, countryCode: "USA" },
     pad: { sourceId: 87, name: "Launch Complex 39A" },
     mission: { sourceId: null, name: "Starlink Group 12-9", description: "A batch of Starlink satellites for SpaceX's low Earth orbit broadband constellation.", type: "Communications", orbit: "Low Earth Orbit", payloadSummary: null },
-    image: SUNRISE_PAD,
   }),
   launch({
     sourceId: "review-starship-14",
@@ -201,11 +179,10 @@ export function buildReviewData(scenario: ReviewScenario): {
   snapshot: CacheSnapshot<NormalizedLaunch[]>;
   now: number;
 } {
-  const data = scenario === "no-image" ? LAUNCHES.map((l) => ({ ...l, image: null })) : LAUNCHES;
   return {
     now: REVIEW_NOW,
     snapshot: {
-      data,
+      data: LAUNCHES,
       lastSuccessfulRefresh: scenario === "stale" ? STALE_REFRESH : FRESH_REFRESH,
       requestCost: 0,
     },

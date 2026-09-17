@@ -3,7 +3,7 @@ import { freshnessOf, STALE_AFTER_MS } from "@/lib/cache";
 import { getUserFacingLaunches } from "@/lib/launches";
 import { loadLaunchData } from "@/lib/launchData";
 import { LaunchDetail } from "@/components/detail/LaunchDetail";
-import { SiteHeader } from "@/components/site/SiteHeader";
+import { ReviewBanner } from "@/components/site/ReviewBanner";
 import styles from "@/app/page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function LaunchDetailPage({ params, searchParams }: PageProps<"/launch/[sourceId]">) {
   const { sourceId } = await params;
   const { review: scenario } = await searchParams;
-  const { snapshot, now, review } = await loadLaunchData(scenario);
+  const { snapshot, now, review, imagesEnabled } = await loadLaunchData(scenario);
   const launch = getUserFacingLaunches(snapshot).find((candidate) => candidate.sourceId === sourceId);
 
   if (!launch) {
@@ -26,14 +26,11 @@ export default async function LaunchDetailPage({ params, searchParams }: PagePro
   const freshness = freshnessOf(snapshot, STALE_AFTER_MS, now);
   const lastSuccessfulRefresh = snapshot?.lastSuccessfulRefresh ?? null;
 
+  const linkQuery = review?.query ?? "";
+
   return (
     <>
-      <SiteHeader
-        lastSuccessfulRefresh={lastSuccessfulRefresh}
-        freshness={freshness}
-        review={review}
-        backHref={`/${review?.query ?? ""}`}
-      />
+      <ReviewBanner review={review} />
       <main className={styles.page}>
         <LaunchDetail
           launch={launch}
@@ -41,6 +38,8 @@ export default async function LaunchDetailPage({ params, searchParams }: PagePro
           lastSuccessfulRefresh={lastSuccessfulRefresh}
           freshness={freshness}
           sourceLabel={review ? "review demonstration data, not Launch Library 2" : "Launch Library 2"}
+          linkQuery={linkQuery}
+          imagesEnabled={imagesEnabled}
         />
       </main>
     </>
