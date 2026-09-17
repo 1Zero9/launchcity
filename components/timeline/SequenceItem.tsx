@@ -16,6 +16,7 @@ export function SequenceItem({
   launch,
   kind,
   column,
+  distance,
   now,
   linkQuery,
   groupLabel,
@@ -24,6 +25,8 @@ export function SequenceItem({
   kind: RailKind;
   /** 1-based desktop grid column, so NEXT stays centred however many neighbours exist. */
   column: number;
+  /** Distance from NEXT (0 = NEXT itself) - drives the curved Horizon's per-slot lift. */
+  distance: number;
   now: number;
   linkQuery: string;
   /** Mobile-only group heading shown before this slot ("Recent" / "Upcoming"). */
@@ -41,7 +44,7 @@ export function SequenceItem({
   return (
     <li
       className={className}
-      style={{ "--column": column } as CSSProperties}
+      style={{ "--column": column, "--distance": distance } as CSSProperties}
       data-group={groupLabel}
       aria-current={kind === "next" ? "true" : undefined}
     >

@@ -51,3 +51,17 @@ export function shortLaunchName(name: string | null | undefined): string {
   if (!payload) return full;
   return /^unknown payload$/i.test(payload) ? vehicle.trim() : payload;
 }
+
+/**
+ * The Horizon hero's dominant heading (founder direction, 2026-09-17
+ * finishing pass): shortLaunchName() with a trailing parenthetical detail
+ * dropped, so "Transporter-17 (Dedicated SSO Rideshare)" reads as
+ * "Transporter-17" - a mission name, not the full raw LL2 title. The
+ * complete name remains available via orUnknown() for Launch Detail and
+ * for this heading's own accessible label.
+ */
+export function heroLaunchName(name: string | null | undefined): string {
+  const short = shortLaunchName(name);
+  const stripped = short.replace(/\s*\([^)]*\)\s*$/, "").trim();
+  return stripped || short;
+}

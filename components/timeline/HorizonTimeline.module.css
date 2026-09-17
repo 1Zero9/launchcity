@@ -7,7 +7,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: clamp(40rem, calc(100dvh - 3.5rem), 50rem);
+  min-height: clamp(32rem, calc(100dvh - 3.5rem), 39rem);
   border-radius: 1.25rem;
   background: #02040a;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
@@ -25,14 +25,17 @@
   position: absolute;
   z-index: 1;
   left: 0;
-  top: 27%;
+  top: 20%;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 72% 30%;
+  object-position: 76% 40%;
+  /* Tames the flare (founder direction: the NEXT marker, not the sun,
+     is the focal point) without re-sourcing the image. */
+  filter: brightness(0.72) saturate(0.88);
   /* Fade in from the dark sky above - no visible top edge. */
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
 }
 
 .shade {
@@ -41,8 +44,11 @@
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(3, 8, 20, 0) 0%, rgba(3, 8, 20, 0) 58%, rgba(10, 28, 60, 0.35) 70%, rgba(3, 8, 20, 0.85) 100%),
+    linear-gradient(180deg, rgba(3, 8, 20, 0) 0%, rgba(3, 8, 20, 0) 50%, rgba(10, 28, 60, 0.3) 66%, rgba(3, 8, 20, 0.82) 100%),
     radial-gradient(ellipse 60% 70% at 10% 30%, rgba(3, 8, 20, 0.55), transparent 70%),
+    /* Dims the flare itself, which sits above/right of the NEXT marker,
+       so the marker's own glow reads as the brightest focal point. */
+    radial-gradient(ellipse 38% 44% at 74% 54%, rgba(3, 8, 20, 0.62), transparent 74%),
     linear-gradient(180deg, rgba(20, 40, 80, 0.35), transparent 30%);
 }
 
@@ -53,13 +59,13 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 2rem;
-  padding: 2.75rem 2.5rem 0;
+  padding: 2rem 2.5rem 0;
 }
 
 /* ---- Next launch ---- */
 
 .dominant {
-  max-width: 44rem;
+  max-width: 26rem;
   min-width: 0;
 }
 
@@ -74,9 +80,9 @@
 
 .title {
   font-family: var(--lc-serif);
-  font-size: clamp(2.25rem, 3.4vw, 3rem);
+  font-size: clamp(1.75rem, 2.2vw, 2.25rem);
   font-weight: 400;
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--lc-fg);
   text-wrap: balance;
@@ -102,7 +108,7 @@
 
 .tagline {
   flex: 0 0 auto;
-  margin: 5.5rem 4% 0 0;
+  margin: 2.25rem 4% 0 0;
   font-family: var(--lc-serif);
   font-style: italic;
   font-size: clamp(1.5rem, 2.4vw, 2.25rem);
@@ -118,7 +124,7 @@
   position: relative;
   z-index: 5;
   margin-top: auto;
-  padding: 2rem 2.5rem 1.1rem;
+  padding: 1.25rem 2.5rem 1.1rem;
 }
 
 .railHead {
@@ -131,31 +137,58 @@
   text-shadow: 0 0 3px rgba(0, 0, 0, 0.9), 0 1px 12px rgba(0, 0, 0, 0.9);
 }
 
-.railList {
+.railTrack {
   --marker-row: 2rem;
+  /* How far a marker lifts toward the NEXT apex - 0 at the outer edges,
+     full height at distance 0 (NEXT itself). Restores Panel C's curved
+     Horizon geometry (originally an SVG arc in the pre-recovery
+     implementation) via a per-slot transform instead. */
+  --curve-lift: 1.35rem;
+  position: relative;
+}
+
+.railList {
   position: relative;
   list-style: none;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   column-gap: 1rem;
+  padding-top: var(--curve-lift);
 }
 
-/* Edge-to-edge line through the markers, brightest at NEXT. */
-.railList::before {
-  content: "";
+/* The curved Horizon line itself: a shallow arc peaking under NEXT,
+   previous/future launches receding outward and downward either side -
+   Panel C's defining product element, not a straight progress bar. */
+.railArc {
   position: absolute;
   left: -2.5rem;
   right: -2.5rem;
-  top: calc(var(--marker-row) / 2);
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(200, 220, 255, 0.35),
-    rgba(200, 220, 255, 0.5) 30%,
-    rgba(255, 255, 255, 0.95) 50%,
-    rgba(200, 220, 255, 0.5) 70%,
-    rgba(200, 220, 255, 0.35)
-  );
+  top: calc(var(--marker-row) / 2 + var(--curve-lift));
+  height: calc(var(--curve-lift) + 0.75rem);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.railArcGlow {
+  fill: none;
+  stroke: var(--lc-horizon, #7dd3fc);
+  stroke-width: 3;
+  opacity: 0.25;
+  filter: blur(3px);
+}
+
+.railArcLine {
+  fill: none;
+  stroke: rgba(220, 232, 255, 0.55);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Base rule kept minimal on desktop (superseded by .railArc); mobile's
+   media query below repositions/styles this into its vertical rail line. */
+.railList::before {
+  content: "";
+  position: absolute;
 }
 
 .slot {
@@ -166,6 +199,9 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  /* Quadratic falloff from the NEXT apex (distance 0) to the rail's
+     outer edges (distance 2), matching .railArc's curve. */
+  transform: translateY(calc(-1 * var(--curve-lift) * (1 - (var(--distance, 0) / 2) * (var(--distance, 0) / 2))));
 }
 
 .marker {
@@ -351,6 +387,17 @@
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
+    padding-top: 0;
+  }
+
+  /* Desktop-only curved Horizon (this pass) - mobile keeps its existing
+     straight side-rail, untouched. */
+  .railArc {
+    display: none;
+  }
+
+  .slot {
+    transform: none;
   }
 
   .railList::before {

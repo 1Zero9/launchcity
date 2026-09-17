@@ -69,22 +69,39 @@ export function HorizonTimeline({
           <span>Recent</span>
           <span>Upcoming</span>
         </div>
-        <ol className={styles.railList}>
+        <div className={styles.railTrack}>
+          <svg className={styles.railArc} viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M2,38 Q100,2 198,38" className={styles.railArcGlow} />
+            <path d="M2,38 Q100,2 198,38" className={styles.railArcLine} />
+          </svg>
+          <ol className={styles.railList}>
           {rail.left.map((slot) => (
             <SequenceItem
               key={slot.launch.sourceId}
               launch={slot.launch}
               kind={slot.kind}
               column={centre - slot.distance}
+              distance={slot.distance}
               now={now}
               linkQuery={linkQuery}
               groupLabel={slot.launch.sourceId === firstRecent ? "Recent" : undefined}
             />
           ))}
           {rail.next ? (
-            <SequenceItem launch={rail.next} kind="next" column={centre} now={now} linkQuery={linkQuery} groupLabel="Next" />
+            <SequenceItem
+              launch={rail.next}
+              kind="next"
+              column={centre}
+              distance={0}
+              now={now}
+              linkQuery={linkQuery}
+              groupLabel="Next"
+            />
           ) : (
-            <li className={`${styles.slot} ${styles.slotNext}`} style={{ "--column": centre } as CSSProperties}>
+            <li
+              className={`${styles.slot} ${styles.slotNext}`}
+              style={{ "--column": centre, "--distance": 0 } as CSSProperties}
+            >
               <span className={styles.marker} aria-hidden="true" />
               <span className={styles.slotLink}>
                 <span className={styles.slotName}>No upcoming launch</span>
@@ -97,12 +114,14 @@ export function HorizonTimeline({
               launch={slot.launch}
               kind={slot.kind}
               column={centre + slot.distance}
+              distance={slot.distance}
               now={now}
               linkQuery={linkQuery}
               groupLabel={slot.launch.sourceId === firstUpcoming ? "Upcoming" : undefined}
             />
           ))}
-        </ol>
+          </ol>
+        </div>
 
         <div className={styles.railFoot}>
           {rail.hiddenOverdue.length > 0 ? (
