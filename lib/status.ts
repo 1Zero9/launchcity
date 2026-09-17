@@ -7,7 +7,7 @@ import { isOverdueUnresolved } from "@/lib/timeline";
  * same launch never reads differently on two surfaces. Tone is a visual
  * supplement only - the label always states the status in words.
  */
-export type StatusTone = "positive" | "negative" | "caution" | "live" | "neutral";
+export type StatusTone = "positive" | "negative" | "partial" | "hold" | "pending" | "live" | "neutral";
 
 export interface LaunchStatus {
   label: string;
@@ -21,16 +21,16 @@ export function describeLaunchStatus(launch: NormalizedLaunch, now: number = Dat
     case "failure":
       return { label: "Failure", tone: "negative" };
     case "partial_failure":
-      return { label: "Partial failure", tone: "caution" };
+      return { label: "Partial failure", tone: "partial" };
   }
   // LL2 "Hold" / "In Flight" (lib/ll2/adapter.ts liveStatus) - more specific
   // than any scheduling label, never implying an outcome.
   if (launch.liveStatus) {
     return /progress|flight/i.test(launch.liveStatus)
       ? { label: "In flight", tone: "live" }
-      : { label: "Holding", tone: "caution" };
+      : { label: "Holding", tone: "hold" };
   }
-  if (isOverdueUnresolved(launch, now)) return { label: "Awaiting update", tone: "caution" };
+  if (isOverdueUnresolved(launch, now)) return { label: "Awaiting update", tone: "pending" };
   switch (launch.schedulingConfidence) {
     case "confirmed":
       return { label: "Confirmed", tone: "positive" };

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "@/app/page.module.css";
 import detailStyles from "@/components/detail/LaunchDetail.module.css";
+import headerStyles from "@/components/site/SiteHeader.module.css";
 
 /**
  * The cache is disposable and rotates roughly every 15 minutes (frozen
@@ -10,18 +11,25 @@ import detailStyles from "@/components/detail/LaunchDetail.module.css";
  */
 export default function LaunchNotFound() {
   return (
-    <main className={styles.page}>
-      <article className={detailStyles.notFound}>
-        <Link href="/" className={detailStyles.notFoundBack}>
-          ← Back to timeline
+    <>
+      <header className={headerStyles.header}>
+        <Link href="/" className={headerStyles.identity}>
+          LaunchCity
         </Link>
-        <p className={detailStyles.eyebrow}>Launch not available</p>
-        <h1 className={detailStyles.title}>We don&rsquo;t currently have this launch cached</h1>
-        <p className={detailStyles.when}>
-          LaunchCity&rsquo;s cache is disposable and refreshes regularly - this launch may have aged out of the
-          current window, or the link may be out of date.
-        </p>
-      </article>
-    </main>
+      </header>
+      <main className={styles.page}>
+        <article className={detailStyles.notFound}>
+          <Link href="/" className={detailStyles.notFoundBack}>
+            ← Back to timeline
+          </Link>
+          <p className={detailStyles.eyebrow}>Launch not available</p>
+          <h1 className={detailStyles.title}>We don&rsquo;t currently have this launch cached</h1>
+          <p className={detailStyles.when}>
+            LaunchCity&rsquo;s cache is disposable and refreshes regularly - this launch may have aged out of the
+            current window, or the link may be out of date.
+          </p>
+        </article>
+      </main>
+    </>
   );
 }

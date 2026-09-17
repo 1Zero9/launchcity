@@ -12,8 +12,12 @@
 
 .tone_positive { color: var(--lc-positive); }
 .tone_negative { color: var(--lc-negative); }
-.tone_caution { color: var(--lc-accent); }
+.tone_partial { color: var(--lc-partial); }
+.tone_hold { color: var(--lc-hold); }
+.tone_pending { color: var(--lc-pending); }
 .tone_live { color: var(--lc-horizon); }
+/* Unresolved, not a warning about the launch itself: dashed, not solid. */
+.pill.tone_pending { border-style: dashed; }
 .tone_neutral { color: var(--lc-fg-secondary); }
 
 .facts {
@@ -50,5 +54,9 @@
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.nowrap {
   white-space: nowrap;
 }

@@ -30,9 +30,12 @@ look the same on every run and match
   `LAUNCHCITY_REVIEW_MODE=fixture` (set by `npm run review`). See
   `lib/launchData.ts`.
 - Next.js inlines `NODE_ENV` at build time, so `next build` and the
-  OpenNext build contain no fixture code, names or images. This was
-  verified by grepping `.next/` and `.open-next/`. `next start` with
-  `LAUNCHCITY_REVIEW_MODE=fixture` set still serves the real cache.
+  OpenNext build contain no fixture data, launch names or images. This was
+  verified by grepping `.next/` (excluding `.next/dev`) and `.open-next/`.
+  Only the banner's static wording is bundled, and it never renders there.
+  `next start` with `LAUNCHCITY_REVIEW_MODE=fixture` set does not activate
+  review mode. Plain `next start` has no Cloudflare context, so it cannot
+  serve the real cache either; that was already true before this change.
 - Nothing here reads or writes KV, calls LL2, or changes the LL2 adapter,
   which still maps `image: null`.
 - Every review page shows a "Review mode · Demonstration data, not live

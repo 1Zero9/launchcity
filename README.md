@@ -19,7 +19,7 @@ Make it easy to understand, for any given launch:
 
 ## Status
 
-Early planning stage. No application architecture, technology stack, or launch-data provider has been selected yet.
+v0.1 is live: Next.js on Cloudflare Workers (OpenNext), with Launch Library 2 data cached in Workers KV. See `PROJECT-OS.md` for decisions and history. Local development uses Node 22.
 
 ## Local review
 

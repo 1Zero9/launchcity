@@ -62,7 +62,7 @@
 }
 
 .provenance {
-  margin-top: 1.75rem;
+  margin: 2.5rem 3rem 0;
   font-size: 0.75rem;
   color: var(--lc-fg-muted);
 }
@@ -124,8 +124,12 @@
 
 /* Not-found (shares the type scale). */
 .notFound {
-  padding: 3rem 0;
+  padding: 1rem 0 3rem;
   max-width: 40rem;
+}
+
+.notFound .title {
+  margin-bottom: 1rem;
 }
 
 .notFoundBack {
@@ -158,5 +162,9 @@
 
   .sections {
     padding: 1.75rem 0.25rem 0;
+  }
+
+  .provenance {
+    margin: 2rem 0.25rem 0;
   }
 }

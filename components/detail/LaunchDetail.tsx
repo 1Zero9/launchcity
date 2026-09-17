@@ -5,13 +5,13 @@ import {
   describeFreshness,
   describeLaunchTime,
   describeOutcome,
-  describeOverdueLaunch,
   describePastLaunchDate,
 } from "@/lib/timeFormat";
 import { isOverdueUnresolved } from "@/lib/timeline";
 import { humanizeUnknown, orUnknown } from "@/lib/text";
 import { HorizonScene } from "@/components/scene/HorizonScene";
 import { LaunchImage } from "@/components/media/LaunchImage";
+import { LaunchTitle } from "@/components/launch/LaunchTitle";
 import { LaunchFacts } from "@/components/launch/LaunchFacts";
 import { StatusPill } from "@/components/launch/StatusPill";
 import styles from "./LaunchDetail.module.css";
@@ -45,11 +45,20 @@ export function LaunchDetail({
   const vehicleFamily =
     launch.vehicle?.family && launch.vehicle.family !== launch.vehicle.name ? launch.vehicle.family : null;
 
+  // The status pill carries "Awaiting update" / "Holding" / "In flight";
+  // the date line only states when.
   const when = flown
     ? describePastLaunchDate(launch.time)
-    : overdue && !launch.liveStatus
-      ? describeOverdueLaunch(launch.time)
+    : overdue
+      ? `Expected ${describeLaunchTime(launch.time, launch.schedulingConfidence)}`
       : describeLaunchTime(launch.time, launch.schedulingConfidence);
+  const eyebrow = flown
+    ? "Completed launch"
+    : status.tone === "live"
+      ? "Launch in progress"
+      : overdue
+        ? "Launch awaiting update"
+        : "Upcoming launch";
 
   return (
     <article className={styles.detail}>
@@ -59,17 +68,15 @@ export function LaunchDetail({
         </HorizonScene>
 
         <div className={styles.identity}>
-          <p className={styles.eyebrow}>{flown ? "Completed launch" : overdue ? "Scheduled launch" : "Upcoming launch"}</p>
-          <h1 className={styles.title}>{orUnknown(launch.name)}</h1>
+          <p className={styles.eyebrow}>{eyebrow}</p>
+          <h1 className={styles.title}>
+            <LaunchTitle name={launch.name} />
+          </h1>
           <p className={styles.whenRow}>
             <span className={styles.when}>{when}</span>
             <StatusPill status={status} />
           </p>
           <LaunchFacts launch={launch} />
-          <p className={freshness === "stale" ? `${styles.provenance} ${styles.stale}` : styles.provenance}>
-            Source: {sourceLabel} · {describeFreshness(lastSuccessfulRefresh)}
-            {freshness === "stale" && " (showing the last known data)"}
-          </p>
         </div>
       </section>
 
@@ -131,6 +138,11 @@ export function LaunchDetail({
           </section>
         )}
       </div>
+
+      <p className={freshness === "stale" ? `${styles.provenance} ${styles.stale}` : styles.provenance}>
+        Source: {sourceLabel} · {describeFreshness(lastSuccessfulRefresh)}
+        {freshness === "stale" && " (showing the last known data)"}
+      </p>
     </article>
   );
 }

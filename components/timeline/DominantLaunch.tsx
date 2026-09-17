@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { NormalizedLaunch } from "@/lib/contract";
 import { describeLaunchStatus } from "@/lib/status";
 import { describeLaunchTime } from "@/lib/timeFormat";
-import { orUnknown } from "@/lib/text";
+import { LaunchTitle } from "@/components/launch/LaunchTitle";
 import { LaunchFacts } from "@/components/launch/LaunchFacts";
 import { StatusPill } from "@/components/launch/StatusPill";
 import styles from "./HorizonTimeline.module.css";
@@ -35,7 +35,7 @@ export function DominantLaunch({
       <p className={styles.eyebrow}>Next launch</p>
       <h1 className={styles.title}>
         <Link href={`/launch/${launch.sourceId}${linkQuery}`} className={styles.titleLink}>
-          {orUnknown(launch.name)}
+          <LaunchTitle name={launch.name} />
         </Link>
       </h1>
       <p className={styles.when}>{describeLaunchTime(launch.time, launch.schedulingConfidence)}</p>

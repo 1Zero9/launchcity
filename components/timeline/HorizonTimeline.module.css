@@ -33,7 +33,7 @@
 /* ---- Next launch ---- */
 
 .dominant {
-  max-width: 40rem;
+  max-width: 36rem;
   min-width: 0;
 }
 
@@ -47,7 +47,7 @@
 }
 
 .title {
-  font-size: clamp(2rem, 3.1vw, 2.75rem);
+  font-size: clamp(2rem, 2.6vw, 2.25rem);
   font-weight: 600;
   line-height: 1.12;
   letter-spacing: -0.015em;
@@ -203,7 +203,9 @@
 
 .tone_positive { color: var(--lc-positive); }
 .tone_negative { color: var(--lc-negative); }
-.tone_caution { color: var(--lc-accent); }
+.tone_partial { color: var(--lc-partial); }
+.tone_hold { color: var(--lc-hold); }
+.tone_pending { color: var(--lc-pending); }
 .tone_live { color: var(--lc-horizon); }
 .tone_neutral { color: var(--lc-fg-muted); }
 

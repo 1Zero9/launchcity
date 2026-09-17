@@ -38,7 +38,7 @@ test("Hold and In Flight use their own honest labels, even when overdue", () => 
 
 test("an unresolved launch whose time has passed is never shown as Confirmed", () => {
   const past = { net: "2026-09-16T13:33:00Z", precision: "Minute", windowStart: null, windowEnd: null };
-  assert.deepEqual(describeLaunchStatus(launch({ time: past }), NOW), { label: "Awaiting update", tone: "caution" });
+  assert.deepEqual(describeLaunchStatus(launch({ time: past }), NOW), { label: "Awaiting update", tone: "pending" });
 });
 
 test("scheduling confidence for genuinely future launches", () => {
@@ -48,4 +48,15 @@ test("scheduling confidence for genuinely future launches", () => {
     describeLaunchStatus(launch({ schedulingConfidence: "unknown", time: { net: null, precision: null, windowStart: null, windowEnd: null } }), NOW).label,
     "Date not set",
   );
+});
+
+test("Hold, overdue and partial failure never share a tone", () => {
+  const past = { net: "2026-09-17T11:30:00Z", precision: "Minute", windowStart: null, windowEnd: null };
+  const tones = new Set([
+    describeLaunchStatus(launch({ liveStatus: "Countdown holding", time: past }), NOW).tone,
+    describeLaunchStatus(launch({ time: past }), NOW).tone,
+    describeLaunchStatus(launch({ outcome: "partial_failure" }), NOW).tone,
+    describeLaunchStatus(launch({ outcome: "failure" }), NOW).tone,
+  ]);
+  assert.equal(tones.size, 4);
 });

@@ -24,7 +24,10 @@
 
   /* Status tones (Experiment 007 recovery) - always paired with words. */
   --lc-positive: #6fdc9a;
-  --lc-negative: #ff8a80;
+  --lc-negative: #ff7a7a;
+  --lc-partial: #ff9f5c;
+  --lc-hold: #ffd166;
+  --lc-pending: #c9b8ff;
 
   --lc-page-max: 76rem;
   --lc-gutter: clamp(1rem, 3vw, 2rem);
