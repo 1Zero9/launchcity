@@ -164,6 +164,8 @@ export function HorizonDial({
   const edgeFade = (x: number) =>
     Math.max(0, Math.min(1, ((w / 2) * 0.95 - Math.abs(x - cx)) / ((w / 2) * 0.28)));
 
+  const endY = Math.min(at(span * 0.86)[1], h - 34);
+
   const focused = items[Math.max(0, Math.min(items.length - 1, Math.round(rot)))];
   const away = Math.abs(rot - home) >= 0.35;
 
@@ -224,15 +226,15 @@ export function HorizonDial({
         <dl className={styles.facts}>
           <div>
             <dt>Provider</dt>
-            <dd>{focused.provider}</dd>
+            <dd title={focused.provider}>{focused.provider}</dd>
           </div>
           <div>
             <dt>Vehicle</dt>
-            <dd>{focused.vehicle}</dd>
+            <dd title={focused.vehicle}>{focused.vehicle}</dd>
           </div>
           <div>
             <dt>Launch site</dt>
-            <dd>{focused.site}</dd>
+            <dd title={focused.site}>{focused.site}</dd>
           </div>
         </dl>
       </div>
@@ -308,10 +310,12 @@ export function HorizonDial({
         })}
       </ol>
 
-      <span className={styles.endPast} style={{ top: `${r2(at(-span * 0.86)[1])}px` }} aria-hidden="true">
+      {/* On a wide card the arc's ends dip past the bottom edge, so the labels
+          are held inside the stage rather than clipped to a sliver. */}
+      <span className={styles.endPast} style={{ top: `${r2(endY)}px` }} aria-hidden="true">
         Past
       </span>
-      <span className={styles.endFuture} style={{ top: `${r2(at(span * 0.86)[1])}px` }} aria-hidden="true">
+      <span className={styles.endFuture} style={{ top: `${r2(endY)}px` }} aria-hidden="true">
         Future
       </span>
 

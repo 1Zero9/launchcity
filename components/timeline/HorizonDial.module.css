@@ -40,9 +40,15 @@
 
 /* ---- header composition ------------------------------------------------ */
 
+/* Capped and centred so the header can never reach the editorial lines at the
+   card's edges. Real provider and site names run to 50+ characters ("China
+   Aerospace Science and Technology Corporation"), which an uncapped row
+   happily spans the full width with. */
 .head {
   position: relative;
   z-index: 3;
+  max-width: 53rem;
+  margin-inline: auto;
   text-align: center;
   padding: var(--lc-space-3) var(--lc-gutter) 0;
 }
@@ -102,14 +108,28 @@
   margin: 1.25rem 0 0;
 }
 .facts div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 15rem;
   padding: 0 1.375rem;
   text-align: left;
   border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 .facts div:first-child { border-left: 0; }
 .facts dt { font-size: 0.6875rem; color: var(--lc-fg-muted); order: 2; }
-.facts dd { margin: 0; font-size: 0.875rem; font-weight: 500; order: 1; }
-.facts div { display: flex; flex-direction: column; }
+.facts dd {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  order: 1;
+  /* Two lines, then ellipsis - the full value stays in the title attribute
+     and on Launch Detail, so nothing is hidden, only abbreviated. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 /* Editorial lines framing the composition (Panel C). */
 .aside {
@@ -127,6 +147,11 @@
 }
 .asideLeft { left: var(--lc-gutter); }
 .asideRight { right: var(--lc-gutter); text-align: right; }
+/* Below this the capped header and the asides would fight for the same
+   columns, and the asides are decorative - so they go rather than collide. */
+@media (max-width: 78rem) {
+  .aside { display: none; }
+}
 
 /* ---- the dial ---------------------------------------------------------- */
 
