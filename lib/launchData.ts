@@ -54,12 +54,16 @@ export async function loadLaunchData(scenarioParam?: string | string[]): Promise
 
   const store = getCacheStore<NormalizedLaunch[]>();
   /**
-   * Imagery is PROVISIONAL pending its own visual proof
-   * (docs/product/2026-09-16-founder-product-direction.md): it "must not
-   * overpower timing, mission identity or confidence information", and the
-   * single Earth photo currently greys the card and blows out the right-hand
-   * side. Until that proof runs, the drawn horizon is the product. Review
-   * mode still serves the photo under ?review=default.
+   * Imagery is DEFERRED by founder decision, 2026-09-18
+   * (docs/product/2026-09-16-founder-product-direction.md). Measured against
+   * the live LL2 2.3.0 feed, only 11 of the next 30 launches carry both a
+   * credit and a stated licence, and 6 of those are CC BY-NC - non-commercial,
+   * which conflicts with LaunchCity's portfolio-showcase purpose. A feature
+   * absent two thirds of the time is not worth its cost while the drawn
+   * horizon already carries the product's identity.
+   *
+   * This is a settled position, not a temporary hold. Review mode still serves
+   * the photo under ?review=default for comparison.
    */
   return { snapshot: await store.read(LAUNCHES_CACHE_KEY), now: Date.now(), review: null, imagesEnabled: false };
 }

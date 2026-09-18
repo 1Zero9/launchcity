@@ -56,6 +56,10 @@ The experience should then allow the visitor to understand the mission in greate
 
 ### New provisional imagery direction
 
+> Superseded by the DEFERRED status recorded at the end of this section
+> (2026-09-18). Retained as written, because it states the shape imagery would
+> take if the licensing picture ever supports building it.
+
 **Horizon**
 
 - The dominant next launch may use one strong mission, rocket, spacecraft or launch-site image.
@@ -81,7 +85,34 @@ When no suitable image exists:
 - do not silently substitute an unrelated launch image;
 - do not weaken the information hierarchy.
 
-**Imagery status: PROVISIONAL — VISUAL PROOF REQUIRED**
+**Imagery status: DEFERRED (2026-09-18) — superseded by measured licensing evidence**
+
+The provisional direction above assumed a suitable image would usually exist.
+It does not. Measured against the live LL2 2.3.0 feed for the next 30 launches:
+
+| | |
+|---|---|
+| Have an image URL | 30 / 30 |
+| Have a credit | 21 / 30 |
+| Have a stated licence | 11 / 30 |
+| Safely displayable (credit **and** licence) | **11 / 30** |
+
+The 19 remainder report `Unknown` — an image exists but its owner and terms
+are not known, which fails "trustworthy and legally usable source" outright.
+Of the 11 that are usable, 6 are **CC BY-NC 2.0 (non-commercial only)**, which
+conflicts with LaunchCity's stated purpose as a 1Zero9 portfolio showcase; the
+remaining 5 are per-provider policies (Roscosmos, ESA, ULA), each with its own
+terms to read.
+
+Founder decision, 2026-09-18: **do not build it.** A feature absent two thirds
+of the time, whose visible third is mostly non-commercial, is not worth the
+cost while the drawn horizon already carries the product's identity. The
+"strong atmospheric fallback" this document already required has simply become
+the whole design.
+
+This is deferred, not rejected. Revisit if LL2's licence coverage improves, or
+if a cleanly-licensed source (e.g. NASA public-domain imagery for US launches)
+is worth the separate ingestion path.
 
 Imagery must also, when eventually implemented:
 
@@ -149,11 +180,11 @@ No field may be fabricated.
 | LaunchCity as useful public product | ACCEPTED | Founder confirmed |
 | LaunchCity as 1Zero9 portfolio showcase | ACCEPTED | Founder confirmed |
 | The Horizon as core experience | ACCEPTED | Founder confirmed |
-| Image-free LaunchCity | SUPERSEDED | Temporary comparison was incorrectly hardened |
-| Imagery on dominant launch | PROVISIONAL | Visual proof required |
-| Imagery on Launch Detail | PROVISIONAL | Visual proof required |
-| Strong no-image fallback | ACCEPTED | Reliability and consistency |
-| Secondary launches remain image-free | PROVISIONAL | Preserve clarity during visual proof |
+| Image-free LaunchCity | ACCEPTED (2026-09-18) | Superseded on 2026-09-16 because it had been hardened without a decision event; re-accepted on evidence, not by drift — see the licensing measurements above |
+| Imagery on dominant launch | DEFERRED | Only 11/30 launches carry a usable credit+licence; 6 of those are non-commercial (2026-09-18) |
+| Imagery on Launch Detail | DEFERRED | Same licensing evidence (2026-09-18) |
+| Strong no-image fallback | ACCEPTED | Now the whole design, not a fallback (2026-09-18) |
+| Secondary launches remain image-free | ACCEPTED | All launches are image-free while imagery is deferred (2026-09-18) |
 | Two-surface completion structure | ACCEPTED | Current completion boundary |
 | Search/filter/browse | DEFERRED | Complete core experience first |
 | Approximately 15-minute freshness | ACCEPTED | Founder confirmed |
