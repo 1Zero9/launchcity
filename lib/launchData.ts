@@ -53,5 +53,13 @@ export async function loadLaunchData(scenarioParam?: string | string[]): Promise
   }
 
   const store = getCacheStore<NormalizedLaunch[]>();
-  return { snapshot: await store.read(LAUNCHES_CACHE_KEY), now: Date.now(), review: null, imagesEnabled: true };
+  /**
+   * Imagery is PROVISIONAL pending its own visual proof
+   * (docs/product/2026-09-16-founder-product-direction.md): it "must not
+   * overpower timing, mission identity or confidence information", and the
+   * single Earth photo currently greys the card and blows out the right-hand
+   * side. Until that proof runs, the drawn horizon is the product. Review
+   * mode still serves the photo under ?review=default.
+   */
+  return { snapshot: await store.read(LAUNCHES_CACHE_KEY), now: Date.now(), review: null, imagesEnabled: false };
 }

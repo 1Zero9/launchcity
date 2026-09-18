@@ -45,9 +45,6 @@ export function HorizonTimeline({
       id: launch.sourceId,
       href: `/launch/${launch.sourceId}${linkQuery}`,
       hero: heroLaunchName(launch.name),
-      // Markers sit ~10rem wide on the arc; the parenthetical qualifier wraps
-      // them to three lines and crowds the curve, so they take the hero form.
-      short: heroLaunchName(launch.name),
       full: orUnknown(launch.name),
       when: describeLaunchTimeLong(launch.time, launch.schedulingConfidence),
       date:
@@ -58,28 +55,27 @@ export function HorizonTimeline({
             : describeShortDate(launch.time),
       statusLabel: status.label,
       statusTone: status.tone,
+      // The marker says what this launch IS in the sequence; every upcoming
+      // launch reads "Confirmed", so the status alone never marks the next one
+      // (founder review: "the next needs to be highlighted more").
+      markLabel: kind === "next" ? "Next" : status.label,
       kind,
       provider: orUnknown(launch.provider?.name),
+      providerType: orUnknown(launch.provider?.type),
       vehicle: orUnknown(launch.vehicle?.name),
+      vehicleFamily: orUnknown(launch.vehicle?.family),
       site: orUnknown(launch.site?.name),
+      pad: orUnknown(launch.pad?.name),
+      summary: launch.mission?.description?.trim() || "No mission description supplied by the source.",
+      missionName: orUnknown(launch.mission?.name),
+      missionType: orUnknown(launch.mission?.type),
+      orbit: orUnknown(launch.mission?.orbit),
+      payload: launch.mission?.payloadSummary?.trim() || "No payload summary supplied by the source.",
     };
   });
 
-  return (
-    <section className={styles.card} aria-label="Next launch and timeline">
-      <HorizonScene className={styles.scene} />
-      {imagesEnabled && <LaunchImage image={EARTH_HORIZON} className={styles.earth} />}
-      <div className={styles.shade} aria-hidden="true" />
-
-      <SiteHeader lastSuccessfulRefresh={lastSuccessfulRefresh} freshness={freshness} linkQuery={linkQuery} />
-
-      <HorizonDial
-        items={items}
-        nextIndex={dial.nextIndex}
-        emptyMessage="No upcoming launch information available"
-      />
-
-      <div className={styles.railFoot}>
+  const footer = (
+    <div key="rail-foot" className={styles.railFoot}>
         {dial.hiddenOverdue.length > 0 ? (
           <details className={styles.more}>
             <summary>
@@ -106,7 +102,30 @@ export function HorizonTimeline({
           {describeShortFreshness(lastSuccessfulRefresh)}
           {stale && " · showing last known data"}
         </p>
-      </div>
-    </section>
+    </div>
+  );
+
+  return (
+    <HorizonDial
+      items={items}
+      nextIndex={dial.nextIndex}
+      emptyMessage="No upcoming launch information available"
+      source="Launch Library 2"
+      lastUpdated={describeShortFreshness(lastSuccessfulRefresh)}
+      cardClassName={styles.card}
+      backdrop={
+        // Keyed because a fragment handed across a prop boundary is validated
+        // as a list, not as static JSX children.
+        <>
+          <HorizonScene key="scene" className={styles.scene} />
+          {imagesEnabled && <LaunchImage key="earth" image={EARTH_HORIZON} className={styles.earth} />}
+          <div key="shade" className={styles.shade} aria-hidden="true" />
+        </>
+      }
+      header={
+        <SiteHeader key="site-header" lastSuccessfulRefresh={lastSuccessfulRefresh} freshness={freshness} linkQuery={linkQuery} />
+      }
+      footer={footer}
+    />
   );
 }

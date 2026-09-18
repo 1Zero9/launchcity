@@ -334,9 +334,134 @@
   font-size: 0.6875rem;
 }
 
+/* ---- frames 2 and 3: the light pair -------------------------------------- */
+/* The Horizon is a night surface; these are daylight panels floating over the
+   page. Their palette is local because the --lc tokens are tuned for the dark
+   card and would be unreadable here. */
+.pair {
+  --paper: #f7f6f2;
+  --paper-2: #edece7;
+  --paper-line: #e2e0d9;
+  --pink: #101a26;
+  --pmute: #66717d;
+  display: grid;
+  grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+  gap: 0.875rem;
+  margin-top: 0.875rem;
+}
+
+.panel {
+  background: linear-gradient(180deg, #fdfcfa 0%, var(--paper) 46%);
+  border: 1px solid var(--paper-line);
+  border-radius: 0.875rem;
+  padding: 1.625rem 1.75rem;
+  color: var(--pink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 20px 44px -28px rgba(4, 12, 24, 0.75);
+}
+
+.dEyebrow {
+  margin: 0 0 0.625rem;
+  font-size: 0.65625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pmute);
+}
+/* The serif lives here, on the light surface - never on the dark Horizon
+   (founder review 2: "over-applied serif typography"). */
+.dTitle {
+  margin: 0;
+  font-family: var(--lc-serif);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3.4vw, 2.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.dWhen {
+  display: flex;
+  align-items: center;
+  gap: 0.8125rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 0;
+  font-size: 0.90625rem;
+  font-variant-numeric: tabular-nums;
+}
+.dPill {
+  padding: 0.21875rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.65625rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #e8e7e2, #dedcd6);
+  color: #3f4a55;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.dPill.p_positive { background: linear-gradient(180deg, #e2f1e8, #d5e9dd); color: #206a44; }
+.dPill.p_negative { background: linear-gradient(180deg, #f6e0e0, #eed3d3); color: #8f2f2f; }
+.dPill.p_partial { background: linear-gradient(180deg, #f6e8db, #eeddca); color: #8a5320; }
+.dPill.p_hold { background: linear-gradient(180deg, #f6eed6, #eee5c6); color: #7d6413; }
+.dPill.p_pending { background: linear-gradient(180deg, #e9e5f7, #ded9f0); color: #4b3f85; }
+.dPill.p_live { background: linear-gradient(180deg, #dbeefb, #cbe5f7); color: #15557f; }
+
+.dSummary {
+  margin: 1.125rem 0 0;
+  font-size: 0.90625rem;
+  line-height: 1.55;
+  max-width: 46ch;
+  opacity: 0.86;
+}
+.dFacts {
+  display: flex;
+  gap: 1.625rem;
+  flex-wrap: wrap;
+  margin: 1.625rem 0 0;
+  padding-top: 1.375rem;
+  border-top: 1px solid var(--paper-line);
+}
+.dFacts div { display: flex; flex-direction: column; min-width: 0; }
+.dFacts dt { order: 2; font-size: 0.6875rem; color: var(--pmute); }
+.dFacts dd { order: 1; margin: 0; font-size: 0.84375rem; font-weight: 600; }
+
+.dMore { margin: 1.375rem 0 0; font-size: 0.84375rem; }
+.dMore a { color: #2f6fa8; }
+
+/* LaunchTabs is shared with the Launch Detail page, which is a dark surface -
+   its active tab is painted in --lc-fg (near-white) and vanishes here. These
+   target ARIA roles rather than the other module's hashed class names. */
+.panel [role="tablist"] { border-bottom-color: var(--paper-line); }
+.panel [role="tab"] { color: var(--pmute); }
+.panel [role="tab"]:hover { color: var(--pink); }
+.panel [role="tab"][aria-selected="true"] { color: #12365c; border-bottom-color: #2f6fa8; }
+
+.summaryCard {
+  background: linear-gradient(180deg, #f2f1ec, var(--paper-2));
+  border: 1px solid rgba(0, 0, 0, 0.045);
+  border-radius: 0.625rem;
+  padding: 1.125rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.summaryCard h3 { margin: 0 0 0.4375rem; font-size: 0.9375rem; font-weight: 600; }
+.summaryCard p { margin: 0; font-size: 0.875rem; line-height: 1.55; opacity: 0.85; }
+
+.kv {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 1.25rem 1.625rem;
+  margin: 0;
+}
+.kv div { display: flex; flex-direction: column; gap: 0.1875rem; min-width: 0; }
+.kv dt { font-size: 0.78125rem; color: var(--pmute); }
+.kv dd { margin: 0; font-size: 0.84375rem; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 51rem) {
+  .pair { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 45rem) {
   .aside { display: none; }
   .stage { min-height: 30rem; }
+  .panel { padding: 1.25rem 1.125rem; }
   .head { padding-top: var(--lc-space-2); }
   .title { font-size: 1.625rem; max-width: 18ch; }
   .when { font-size: 0.8125rem; }
