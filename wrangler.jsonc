@@ -21,10 +21,17 @@
     { "binding": "LAUNCHES_KV", "id": "c60df35f9ef14a05b386d88736f53f5e" }
   ],
 
-  // Fixed ~15 minute refresh cadence (PROJECT-OS.md), measured at 2 LL2
-  // requests per refresh - comfortably within the ~15 req/hour budget.
-  // Deliberately not proximity-aware to launch windows (deferred).
+  // Ingestion moved to GitHub Actions (.github/workflows/refresh.yml) on
+  // 2026-09-18. LL2 rate-limits per IP and Cloudflare Workers share outbound
+  // egress, so refreshes from here received sustained 429s while the same
+  // request from a GitHub runner succeeded - see
+  // docs/architecture/2026-09-16-refresh-platform-review.md (Option B).
+  //
+  // The cron is disabled rather than left running: a refresh from this
+  // identity cannot currently succeed, and its failed attempts would keep
+  // consuming the shared bucket other callers depend on. The Worker still
+  // serves the app and reads the same KV namespace; only the writer moved.
   "triggers": {
-    "crons": ["*/15 * * * *"]
+    "crons": []
   }
 }

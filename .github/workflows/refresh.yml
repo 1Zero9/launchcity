@@ -1,0 +1,46 @@
+name: Refresh launch data
+
+# Ingestion runs here rather than on Cloudflare because Launch Library 2
+# rate-limits per IP and Cloudflare Workers share outbound egress: on
+# 2026-09-16 a GitHub runner read /launch/upcoming/ successfully while
+# LaunchCity's own Cloudflare cron got 429 on the same endpoint minutes later.
+# See docs/architecture/2026-09-16-refresh-platform-review.md (Option B).
+
+on:
+  schedule:
+    # Every 15 minutes - the frozen freshness target. GitHub may delay a run
+    # under load, which the ~30 minute staleness threshold already tolerates.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: # manual run, for testing and for catching up after an outage
+
+concurrency:
+  # Never let a delayed run overlap the next one and double the request cost.
+  group: refresh-launch-data
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch from Launch Library 2 and publish to KV
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_KV_NAMESPACE_ID: ${{ secrets.CLOUDFLARE_KV_NAMESPACE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Optional: set if an LL2 API key is ever obtained. Without it the
+          # anonymous 15 requests/hour tier applies, which this run fits inside.
+          LL2_API_TOKEN: ${{ secrets.LL2_API_TOKEN }}
+        run: npx tsx scripts/ingest.ts
