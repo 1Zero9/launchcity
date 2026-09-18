@@ -1,0 +1,333 @@
+/*
+ * The Horizon dial. Geometry lives in HorizonDial.tsx (positions are computed,
+ * not laid out), so this file only styles what sits at those positions.
+ *
+ * Founder review 2 recorded "over-applied serif typography": the serif belongs
+ * on the light Launch Detail surface, never on the dark Horizon. The title
+ * here is deliberately the sans stack.
+ */
+
+.stage {
+  position: relative;
+  min-height: 34rem;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.stage:active { cursor: grabbing; }
+.stage:focus-visible { outline: 2px solid var(--lc-focus); outline-offset: -3px; }
+
+/* Atmosphere: haze off the limb, vignette at the edges. */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(150% 46% at 50% 100%, rgba(125, 211, 252, 0.18) 0%, rgba(125, 211, 252, 0.06) 42%, transparent 72%),
+    linear-gradient(180deg, rgba(125, 211, 252, 0.06) 0%, transparent 26%);
+}
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(120% 96% at 50% 46%, transparent 52%, rgba(3, 7, 14, 0.46) 100%);
+}
+
+/* ---- header composition ------------------------------------------------ */
+
+.head {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: var(--lc-space-3) var(--lc-gutter) 0;
+}
+.eyebrow {
+  margin: 0 0 0.625rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lc-fg-muted);
+}
+.eyebrowNow { color: var(--lc-horizon); }
+
+.title {
+  margin: 0 auto;
+  max-width: 15ch;
+  font-size: clamp(1.75rem, 4.6vw, 2.875rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.titleLink { color: inherit; text-decoration: none; }
+.titleLink:hover { text-decoration: underline; text-underline-offset: 0.18em; }
+.titleLink:focus-visible { outline: 2px solid var(--lc-focus); outline-offset: 4px; border-radius: 0.25rem; }
+
+.when {
+  margin: 0.75rem 0 0;
+  font-size: clamp(0.8125rem, 1.6vw, 1rem);
+  color: var(--lc-fg);
+  font-variant-numeric: tabular-nums;
+}
+.pillRow { margin: 0.75rem 0 0; }
+.pill {
+  display: inline-block;
+  padding: 0.28rem 0.875rem;
+  border-radius: 999px;
+  font-size: 0.71875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lc-fg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.pill.tone_positive { color: var(--lc-positive); border-color: rgba(111, 220, 154, 0.34); }
+.pill.tone_negative { color: var(--lc-negative); border-color: rgba(255, 122, 122, 0.34); }
+.pill.tone_partial { color: var(--lc-partial); border-color: rgba(255, 159, 92, 0.34); }
+.pill.tone_hold { color: var(--lc-hold); border-color: rgba(255, 209, 102, 0.34); }
+.pill.tone_pending { color: var(--lc-pending); border-style: dashed; }
+.pill.tone_live { color: var(--lc-horizon); border-color: var(--lc-horizon-glow); }
+
+.facts {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 1.25rem 0 0;
+}
+.facts div {
+  padding: 0 1.375rem;
+  text-align: left;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+.facts div:first-child { border-left: 0; }
+.facts dt { font-size: 0.6875rem; color: var(--lc-fg-muted); order: 2; }
+.facts dd { margin: 0; font-size: 0.875rem; font-weight: 500; order: 1; }
+.facts div { display: flex; flex-direction: column; }
+
+/* Editorial lines framing the composition (Panel C). */
+.aside {
+  position: absolute;
+  top: 7.5rem;
+  z-index: 3;
+  max-width: 9ch;
+  margin: 0;
+  font-family: var(--lc-serif);
+  font-style: italic;
+  font-size: clamp(0.9375rem, 2vw, 1.3125rem);
+  line-height: 1.32;
+  color: var(--lc-fg-secondary);
+  opacity: 0.8;
+}
+.asideLeft { left: var(--lc-gutter); }
+.asideRight { right: var(--lc-gutter); text-align: right; }
+
+/* ---- the dial ---------------------------------------------------------- */
+
+.arc {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.markers {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+.mark {
+  position: absolute;
+  width: 10.625rem;
+  margin-top: -0.5625rem;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: auto;
+  transition: opacity 0.18s ease;
+}
+.markButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.markButton:focus-visible { outline: 2px solid var(--lc-focus); outline-offset: 6px; border-radius: 0.5rem; }
+
+.dot {
+  display: block;
+  width: 0.8125rem;
+  height: 0.8125rem;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 1.5px solid rgba(160, 222, 247, 0.9);
+  background: radial-gradient(circle at 34% 28%, #bfe6fb 0%, #2a5f81 58%, #0e2c40 100%);
+  box-shadow: 0 0 12px var(--lc-horizon-glow), inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+.markButton:hover .dot { border-color: #eaf9ff; box-shadow: 0 0 18px rgba(234, 249, 255, 0.8); }
+
+.markOn .dot {
+  width: 1.625rem;
+  height: 1.625rem;
+  margin-top: -0.4375rem;
+  border: 0;
+  background: radial-gradient(circle at 36% 30%, #ffffff 0%, #eaf8ff 45%, #a9dcf5 100%);
+  box-shadow:
+    0 0 0 7px rgba(125, 211, 252, 0.15),
+    0 0 38px rgba(214, 242, 255, 0.9),
+    inset 0 -2px 5px rgba(60, 140, 180, 0.45),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95);
+}
+
+/* The real next launch stays marked wherever the dial has been turned. */
+.markNext .dot {
+  border-color: #bfe9fb;
+  animation: dialPulse 3.4s ease-in-out infinite;
+}
+.markNext.markOn .dot { animation: none; }
+@keyframes dialPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.2), 0 0 20px rgba(125, 211, 252, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.6); }
+  50% { box-shadow: 0 0 0 10px rgba(125, 211, 252, 0.05), 0 0 30px rgba(125, 211, 252, 0.95), inset 0 1px 1px rgba(255, 255, 255, 0.6); }
+}
+
+.markName {
+  display: block;
+  margin-top: 0.875rem;
+  font-size: 0.78125rem;
+  line-height: 1.28;
+  color: var(--lc-fg);
+  opacity: 0.85;
+}
+.markOn .markName { margin-top: 1.125rem; font-size: 0.9375rem; font-weight: 600; opacity: 1; }
+.markDate {
+  display: block;
+  margin-top: 0.1875rem;
+  font-size: 0.71875rem;
+  color: var(--lc-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.markOn .markDate { color: var(--lc-fg-secondary); font-size: 0.78125rem; }
+
+.markStatus {
+  display: inline-block;
+  margin-top: 0.375rem;
+  padding: 0.15rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0));
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--lc-fg-muted);
+}
+.markStatus.tone_positive { color: var(--lc-positive); border-color: rgba(111, 220, 154, 0.3); }
+.markStatus.tone_negative { color: var(--lc-negative); border-color: rgba(255, 122, 122, 0.3); }
+.markStatus.tone_partial { color: var(--lc-partial); border-color: rgba(255, 159, 92, 0.3); }
+.markStatus.tone_hold { color: var(--lc-hold); border-color: rgba(255, 209, 102, 0.3); }
+.markStatus.tone_pending { color: var(--lc-pending); border-style: dashed; }
+.markStatus.tone_live { color: var(--lc-horizon); border-color: var(--lc-horizon-glow); }
+.markNext .markStatus {
+  color: #eaf9ff;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  border-color: rgba(125, 211, 252, 0.6);
+  background: linear-gradient(180deg, rgba(125, 211, 252, 0.34), rgba(125, 211, 252, 0.1));
+  box-shadow: 0 0 16px rgba(125, 211, 252, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.endPast, .endFuture {
+  position: absolute;
+  z-index: 2;
+  font-size: 0.65625rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--lc-fg-faint);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.endPast { left: var(--lc-gutter); }
+.endFuture { right: var(--lc-gutter); }
+
+.home {
+  position: absolute;
+  left: 50%;
+  bottom: 3.75rem;
+  z-index: 5;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.375rem 0.8125rem;
+  border-radius: 999px;
+  border: 1px solid var(--lc-horizon-glow);
+  background: rgba(10, 22, 36, 0.86);
+  backdrop-filter: blur(6px);
+  color: var(--lc-horizon);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.home:hover { color: #eaf9ff; border-color: var(--lc-horizon); }
+.home:focus-visible { outline: 2px solid var(--lc-focus); outline-offset: 2px; }
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 1.375rem;
+  z-index: 3;
+  margin: 0;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  color: var(--lc-fg-muted);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+.hint span {
+  display: grid;
+  place-items: center;
+  width: 1.6875rem;
+  height: 1.6875rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.6875rem;
+}
+
+@media (max-width: 45rem) {
+  .aside { display: none; }
+  .stage { min-height: 30rem; }
+  .head { padding-top: var(--lc-space-2); }
+  .title { font-size: 1.625rem; max-width: 18ch; }
+  .when { font-size: 0.8125rem; }
+  .facts { gap: 0 0.5rem; margin-top: 0.875rem; }
+  .facts div { border-left: 0; padding: 0; flex-direction: row; gap: 0.3125rem; align-items: baseline; }
+  .facts dt { order: 0; font-size: 0.625rem; }
+  .facts dd { font-size: 0.75rem; }
+  .mark { width: 7.125rem; }
+  .markName { font-size: 0.75rem; }
+  .markOn .markName { font-size: 0.875rem; }
+  .markDate, .markOn .markDate { font-size: 0.6875rem; }
+  .hint { font-size: 0.6875rem; bottom: 0.875rem; }
+  .home { bottom: 3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark { transition: none; }
+  .markNext .dot { animation: none; }
+}

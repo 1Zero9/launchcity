@@ -171,3 +171,52 @@ export function buildHorizonRail(
 
   return { left, next: seq.dominant, right, hiddenOverdue: seq.overdue.slice(shownOverdue.length) };
 }
+
+/**
+ * The rotatable Horizon (2026-09-18, founder-confirmed proof). The rail above
+ * is a fixed five-slot strip; the dial is one continuous chronological
+ * sequence the visitor turns through, so it needs more launches either side
+ * of NEXT than the strip ever showed. NEXT keeps its own index so the dial
+ * can always mark and return to it however far it has been turned.
+ *
+ * Order is strictly chronological - past, then overdue (which sit between
+ * flown launches and NEXT), then NEXT, then future. `nextIndex` is -1 when
+ * no confident next launch exists; the dial then opens on the most recent
+ * entry rather than inventing one.
+ */
+export interface HorizonDial {
+  items: { launch: NormalizedLaunch; kind: RailKind }[];
+  nextIndex: number;
+  hiddenOverdue: NormalizedLaunch[];
+}
+
+export const DIAL_PAST = 5;
+export const DIAL_FUTURE = 7;
+
+export function buildHorizonDial(
+  launches: NormalizedLaunch[],
+  now: number = Date.now(),
+  past: number = DIAL_PAST,
+  future: number = DIAL_FUTURE,
+): HorizonDial {
+  const seq = buildLaunchSequence(launches, Math.max(past, future), now);
+
+  const before = seq.before.slice(-past).map((launch) => ({ launch, kind: "past" as const }));
+  // Overdue launches are chronologically after the flown ones and before NEXT.
+  const overdue = [...seq.overdue]
+    .sort((a, b) => (launchTimeMs(a) ?? 0) - (launchTimeMs(b) ?? 0))
+    .slice(-2)
+    .map((launch) => ({ launch, kind: "overdue" as const }));
+  const after = seq.after.slice(0, future).map((launch) => ({ launch, kind: "future" as const }));
+
+  const head = [...before, ...overdue];
+  const items = seq.dominant
+    ? [...head, { launch: seq.dominant, kind: "next" as const }, ...after]
+    : [...head, ...after];
+
+  return {
+    items,
+    nextIndex: seq.dominant ? head.length : -1,
+    hiddenOverdue: seq.overdue.slice(0, Math.max(seq.overdue.length - overdue.length, 0)),
+  };
+}

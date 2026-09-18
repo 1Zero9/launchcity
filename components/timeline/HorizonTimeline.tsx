@@ -1,28 +1,25 @@
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import type { CacheFreshness } from "@/lib/cache";
 import type { NormalizedLaunch } from "@/lib/contract";
 import { EARTH_HORIZON } from "@/lib/imagery";
-import { buildHorizonRail, RAIL_SIDE_SLOTS } from "@/lib/timeline";
+import { buildHorizonDial } from "@/lib/timeline";
 import { describeLaunchStatus } from "@/lib/status";
-import { describeShortFreshness, describeShortTime } from "@/lib/timeFormat";
-import { orUnknown } from "@/lib/text";
+import { describeLaunchTimeLong, describeShortFreshness, describeShortDate, describeShortTime } from "@/lib/timeFormat";
+import { heroLaunchName, orUnknown } from "@/lib/text";
 import { HorizonScene } from "@/components/scene/HorizonScene";
 import { LaunchImage } from "@/components/media/LaunchImage";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { DominantLaunch } from "./DominantLaunch";
-import { SequenceItem } from "./SequenceItem";
+import { HorizonDial, type DialItem } from "./HorizonDial";
 import styles from "./HorizonTimeline.module.css";
 
 /**
- * The Horizon - Panel C of docs/evidence/product-intent/launchcity-three-visions.png.
+ * The Horizon - Panel C of docs/evidence/product-intent/launchcity-three-visions.png
+ * and docs/evidence/product-intent/launchcity-original-full-page.png.
  *
- * One card: Earth's horizon at sunrise (a public-source photo, credited on
- * the Credits page) behind everything; header inside the card; the next
- * launch top-left with the tagline to the right; and along the bottom a
- * fixed five-slot timeline - Recent, NEXT (centred), Upcoming. The timeline
- * is capped (lib/timeline.ts buildHorizonRail) so real, stale data can
- * never crowd the hero.
+ * One card: Earth's horizon at sunrise behind everything; header inside the
+ * card; and the launch sequence as a curved dial the visitor turns through
+ * time (HorizonDial). Every display string is formatted here, on the server,
+ * so the client component carries geometry and interaction only.
  */
 export function HorizonTimeline({
   launches,
@@ -39,11 +36,34 @@ export function HorizonTimeline({
   lastSuccessfulRefresh: string | null;
   freshness: CacheFreshness;
 }) {
-  const rail = buildHorizonRail(launches, RAIL_SIDE_SLOTS, now);
-  const centre = RAIL_SIDE_SLOTS + 1;
-  const firstRecent = rail.left[0]?.launch.sourceId;
-  const firstUpcoming = rail.right[0]?.launch.sourceId;
+  const dial = buildHorizonDial(launches, now);
   const stale = freshness === "stale";
+
+  const items: DialItem[] = dial.items.map(({ launch, kind }) => {
+    const status = describeLaunchStatus(launch, now);
+    return {
+      id: launch.sourceId,
+      href: `/launch/${launch.sourceId}${linkQuery}`,
+      hero: heroLaunchName(launch.name),
+      // Markers sit ~10rem wide on the arc; the parenthetical qualifier wraps
+      // them to three lines and crowds the curve, so they take the hero form.
+      short: heroLaunchName(launch.name),
+      full: orUnknown(launch.name),
+      when: describeLaunchTimeLong(launch.time, launch.schedulingConfidence),
+      date:
+        kind === "future" || kind === "next"
+          ? describeShortTime(launch.time, launch.schedulingConfidence)
+          : kind === "overdue"
+            ? `Expected ${describeShortTime(launch.time, launch.schedulingConfidence)}`
+            : describeShortDate(launch.time),
+      statusLabel: status.label,
+      statusTone: status.tone,
+      kind,
+      provider: orUnknown(launch.provider?.name),
+      vehicle: orUnknown(launch.vehicle?.name),
+      site: orUnknown(launch.site?.name),
+    };
+  });
 
   return (
     <section className={styles.card} aria-label="Next launch and timeline">
@@ -53,105 +73,40 @@ export function HorizonTimeline({
 
       <SiteHeader lastSuccessfulRefresh={lastSuccessfulRefresh} freshness={freshness} linkQuery={linkQuery} />
 
-      <div className={styles.body}>
-        <DominantLaunch launch={rail.next} now={now} linkQuery={linkQuery} />
-        <p className={styles.tagline} aria-hidden="true">
-          Next
-          <br />
-          to a brighter
-          <br />
-          tomorrow.
+      <HorizonDial
+        items={items}
+        nextIndex={dial.nextIndex}
+        emptyMessage="No upcoming launch information available"
+      />
+
+      <div className={styles.railFoot}>
+        {dial.hiddenOverdue.length > 0 ? (
+          <details className={styles.more}>
+            <summary>
+              {dial.hiddenOverdue.length} more {dial.hiddenOverdue.length === 1 ? "launch" : "launches"} awaiting an
+              update
+            </summary>
+            <ul>
+              {dial.hiddenOverdue.map((launch) => (
+                <li key={launch.sourceId}>
+                  <Link href={`/launch/${launch.sourceId}${linkQuery}`}>{orUnknown(launch.name)}</Link>
+                  <span>
+                    {" "}
+                    · {describeLaunchStatus(launch, now).label} · expected{" "}
+                    {describeShortTime(launch.time, launch.schedulingConfidence)} UTC
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : (
+          <span />
+        )}
+        <p className={stale ? `${styles.asOf} ${styles.stale}` : styles.asOf}>
+          {describeShortFreshness(lastSuccessfulRefresh)}
+          {stale && " · showing last known data"}
         </p>
       </div>
-
-      <nav className={styles.rail} aria-label="Launch timeline">
-        <div className={styles.railHead} aria-hidden="true">
-          <span>Recent</span>
-          <span>Upcoming</span>
-        </div>
-        <div className={styles.railTrack}>
-          <svg className={styles.railArc} viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M2,38 Q100,2 198,38" className={styles.railArcGlow} />
-            <path d="M2,38 Q100,2 198,38" className={styles.railArcLine} />
-          </svg>
-          <ol className={styles.railList}>
-          {rail.left.map((slot) => (
-            <SequenceItem
-              key={slot.launch.sourceId}
-              launch={slot.launch}
-              kind={slot.kind}
-              column={centre - slot.distance}
-              distance={slot.distance}
-              now={now}
-              linkQuery={linkQuery}
-              groupLabel={slot.launch.sourceId === firstRecent ? "Recent" : undefined}
-            />
-          ))}
-          {rail.next ? (
-            <SequenceItem
-              launch={rail.next}
-              kind="next"
-              column={centre}
-              distance={0}
-              now={now}
-              linkQuery={linkQuery}
-              groupLabel="Next"
-            />
-          ) : (
-            <li
-              className={`${styles.slot} ${styles.slotNext}`}
-              style={{ "--column": centre, "--distance": 0 } as CSSProperties}
-            >
-              <span className={styles.marker} aria-hidden="true" />
-              <span className={styles.slotLink}>
-                <span className={styles.slotName}>No upcoming launch</span>
-              </span>
-            </li>
-          )}
-          {rail.right.map((slot) => (
-            <SequenceItem
-              key={slot.launch.sourceId}
-              launch={slot.launch}
-              kind={slot.kind}
-              column={centre + slot.distance}
-              distance={slot.distance}
-              now={now}
-              linkQuery={linkQuery}
-              groupLabel={slot.launch.sourceId === firstUpcoming ? "Upcoming" : undefined}
-            />
-          ))}
-          </ol>
-        </div>
-
-        <div className={styles.railFoot}>
-          {rail.hiddenOverdue.length > 0 ? (
-            <details className={styles.more}>
-              <summary>
-                {rail.hiddenOverdue.length} more {rail.hiddenOverdue.length === 1 ? "launch" : "launches"} awaiting an
-                update
-              </summary>
-              <ul>
-                {rail.hiddenOverdue.map((launch) => (
-                  <li key={launch.sourceId}>
-                    <Link href={`/launch/${launch.sourceId}${linkQuery}`}>{orUnknown(launch.name)}</Link>
-                    <span>
-                      {" "}
-                      · {describeLaunchStatus(launch, now).label} · expected{" "}
-                      {describeShortTime(launch.time, launch.schedulingConfidence)} UTC
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ) : (
-            <span />
-          )}
-          <p className={stale ? `${styles.asOf} ${styles.stale}` : styles.asOf}>
-            {describeShortFreshness(lastSuccessfulRefresh)}
-            {stale && " · showing last known data"}
-          </p>
-        </div>
-      </nav>
     </section>
   );
 }

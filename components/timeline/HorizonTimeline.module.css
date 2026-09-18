@@ -13,10 +13,14 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
+/* The CSS planet and the dial must be the SAME curve, or the card shows two
+   horizons crossing. --planet-size is 2 x DIAL_RADIUS in px (not a %, which
+   would rescale with the viewport while the dial's radius stays fixed), and
+   --limb-x is centred to match the dial's apex. */
 .scene {
-  --limb-x: 72%;
-  --limb-top: 72%;
-  --planet-size: 900%;
+  --limb-x: 50%;
+  --limb-top: 60%;
+  --planet-size: 3400px;
 }
 
 /* The photo's limb sits ~43% down the image; offsetting the image keeps
@@ -345,9 +349,9 @@
   }
 
   .scene {
-    --limb-x: 66%;
-    --limb-top: 9.5rem;
-    --planet-size: 900%;
+    --limb-x: 50%;
+    --limb-top: 62%;
+    --planet-size: 3400px;
   }
 
   .earth {
