@@ -118,15 +118,51 @@ export function HorizonDial({
 
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
+  /**
+   * Spin into place on load. This is the affordance as much as the flourish:
+   * a dial that visibly turns when the page opens tells the visitor it turns,
+   * which a static curve and a caption never managed to.
+   */
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const from = home - 2.4;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - start) / 1100);
+      const eased = 1 - Math.pow(1 - k, 3);
+      setRot(from + (home - from) * eased);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    // The first frame sets `from` itself (eased is 0 at k=0), so there is no
+    // synchronous setState here and no cascading render.
+    raf = requestAnimationFrame(tick);
+    // Cancels only its own frame, and re-runs cleanly under StrictMode's
+    // double-invoke - a guard ref survives the cleanup and would cancel the
+    // animation on the first pass then skip it on the second, so there is none.
+    return () => {
+      cancelAnimationFrame(raf);
+      setRot(home);
+    };
+  }, [home]);
+
   const onPointerDown = (e: React.PointerEvent) => {
     cancelAnimationFrame(frame.current);
+    // Deliberately NOT capturing the pointer yet. Capturing on pointerdown
+    // retargets every later pointer event to the stage, which swallows the
+    // click on any button inside it - that is what stopped "Back to next
+    // launch" working. Capture starts below, once a real drag begins, so
+    // buttons stay clickable and a drag may still start anywhere.
     drag.current = { active: true, last: e.clientX, from: e.clientX, moved: false };
-    stage.current?.setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d.active) return;
-    if (Math.abs(e.clientX - d.from) > 5) d.moved = true;
+    if (!d.moved && Math.abs(e.clientX - d.from) > 5) {
+      d.moved = true;
+      stage.current?.setPointerCapture(e.pointerId);
+    }
+    if (!d.moved) return;
     // Same spacing the render uses, so a drag moves the dial by what it looks like.
     const delta = (e.clientX - d.last) / Math.max(118, DIAL_SPACING * (box.w / 1440));
     d.last = e.clientX;
@@ -136,8 +172,15 @@ export function HorizonDial({
     const d = drag.current;
     if (!d.active) return;
     d.active = false;
-    stage.current?.releasePointerCapture?.(e.pointerId);
+    if (stage.current?.hasPointerCapture?.(e.pointerId)) {
+      stage.current.releasePointerCapture(e.pointerId);
+    }
     if (d.moved) glideTo(Math.round(rot));
+    // `moved` is read by the markers' click handler, which fires after this.
+    // Clearing it immediately would turn the end of every drag into a click.
+    requestAnimationFrame(() => {
+      drag.current.moved = false;
+    });
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -337,7 +380,9 @@ export function HorizonDial({
                 <li
                   key={item.id}
                   className={classes.join(" ")}
-                  style={{ left: `${r2(x)}px`, top: `${r2(y)}px`, opacity }}
+                  // A faded-out marker must not keep catching clicks meant for
+                  // what is behind it.
+                  style={{ left: `${r2(x)}px`, top: `${r2(y)}px`, opacity, pointerEvents: offscreen ? "none" : undefined }}
                   aria-current={distance < 0.5 ? "true" : undefined}
                   aria-hidden={offscreen ? "true" : undefined}
                 >
@@ -372,12 +417,27 @@ export function HorizonDial({
           </span>
 
           {away && (
-            <button type="button" className={styles.home} onClick={() => glideTo(home)}>
+            <button
+              type="button"
+              className={styles.home}
+              // The stage captures the pointer on pointerdown to drive the
+              // drag, which swallows this button's click. Stop it here so the
+              // button stays clickable inside the draggable surface.
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => glideTo(home)}
+            >
               ↩ Back to {nextIndex >= 0 ? "next launch" : "latest"}
             </button>
           )}
-          <p className={styles.hint} aria-hidden="true">
-            <span>⌄</span> Drag, or select a launch
+          {/* A horizontal affordance, on the arc rather than at the foot of the
+              card: the gesture is a sideways spin, and a down-chevron read as
+              "scroll down". */}
+          {/* Clear of the focused marker's whole label block (dot, name, date,
+              status pill), which runs to roughly gy + 150. */}
+          <p className={styles.hint} style={{ top: `${r2(Math.min(gy + 186, h - 30))}px` }} aria-hidden="true">
+            <span className={styles.hintArrow}>‹</span>
+            Drag to spin
+            <span className={styles.hintArrow}>›</span>
           </p>
         </div>
 

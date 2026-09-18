@@ -30,8 +30,8 @@ export function SiteHeader({
           <span aria-hidden="true">←</span> Back to timeline
         </Link>
       ) : (
-        <Link href={home} className={styles.identity}>
-          LaunchCity
+        <Link href={home} className={styles.identity} aria-label="LaunchCity">
+          Launch<span className={styles.identityCity}>City</span>
         </Link>
       )}
 
@@ -43,8 +43,8 @@ export function SiteHeader({
           </p>
         )}
         {backHref && (
-          <Link href={home} className={styles.identity}>
-            LaunchCity
+          <Link href={home} className={styles.identity} aria-label="LaunchCity">
+            Launch<span className={styles.identityCity}>City</span>
           </Link>
         )}
         <details className={styles.menu}>

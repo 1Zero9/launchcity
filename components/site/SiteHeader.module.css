@@ -15,6 +15,10 @@
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
 
+/* Two-tone wordmark, as in the original Horizon concept: "Launch" in the
+   foreground colour, "City" in the horizon blue that the arc is drawn in. */
+.identityCity { color: var(--lc-horizon); }
+
 .back {
   font-size: 0.9375rem;
   color: var(--lc-fg-secondary);
