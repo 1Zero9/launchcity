@@ -1,23 +1,26 @@
 /**
  * Scheduled ingestion, run from GitHub Actions (.github/workflows/refresh.yml).
  *
- * This is the whole of Option B from
- * docs/architecture/2026-09-16-refresh-platform-review.md: the Launch Library 2
- * request originates here, from GitHub's egress rather than Cloudflare's, and
- * the result is published into the same KV namespace the Worker reads. The
- * refresh LOGIC is unchanged - lib/refresh.ts is dependency-injected, so this
- * only swaps where the call comes from and how the snapshot is written.
+ * This is Option B from docs/architecture/2026-09-16-refresh-platform-review.md:
+ * the Launch Library 2 request originates HERE, from GitHub's egress rather
+ * than Cloudflare's, because LL2 rate-limits per IP and Cloudflare Workers
+ * share outbound addresses. On 2026-09-16 a GitHub runner read
+ * /launch/upcoming/ with HTTP 200 while LaunchCity's own Cloudflare cron got
+ * 429 on the same endpoint eleven minutes later.
  *
- * Triggering the Worker's own /api/refresh would NOT work: the LL2 request
- * would still leave from Cloudflare, which is the thing being rate-limited.
+ * It posts the RAW LL2 responses to the Worker, which normalises, validates
+ * and writes them exactly as the cron did. Two consequences worth keeping:
+ * the Worker remains the only thing that writes KV, and this script needs no
+ * Cloudflare credentials at all - just the shared secret the Worker already
+ * had.
+ *
+ * Triggering the Worker's own /api/refresh instead would NOT work: the LL2
+ * request would still leave from Cloudflare, which is the rate-limited path.
  *
  * Run: tsx scripts/ingest.ts
  */
 
-import { KvRestCache } from "../lib/cache/kvRestCache";
-import type { NormalizedLaunch } from "../lib/contract";
 import { fetchPrevious, fetchUpcoming } from "../lib/ll2/client";
-import { refreshLaunchData } from "../lib/refresh";
 
 function required(name: string): string {
   const value = process.env[name];
@@ -29,26 +32,33 @@ function required(name: string): string {
 }
 
 async function main() {
-  const store = new KvRestCache<NormalizedLaunch[]>(
-    required("CLOUDFLARE_ACCOUNT_ID"),
-    required("CLOUDFLARE_KV_NAMESPACE_ID"),
-    required("CLOUDFLARE_API_TOKEN"),
-  );
+  const publishUrl = required("PUBLISH_URL");
+  const secret = required("REFRESH_SECRET");
 
-  const result = await refreshLaunchData({ fetchUpcoming, fetchPrevious, store });
+  // Sequential, not parallel: two requests a quarter-hour apart sit well
+  // inside LL2's 15/hour anonymous budget, and firing them together only
+  // makes a burst that a per-IP limiter is more likely to notice.
+  const upcoming = await fetchUpcoming();
+  const previous = await fetchPrevious();
 
-  // One line the workflow log can be read at a glance, and a non-zero exit so
-  // a failed run is visible in the Actions UI rather than silently green.
-  if (result.ok) {
-    console.log(`refresh ok - ${result.launchCount} launches, ${result.requestCost} LL2 request(s)`);
-    return;
+  const res = await fetch(publishUrl, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-refresh-secret": secret },
+    body: JSON.stringify({ upcoming, previous }),
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    console.error(`publish failed: ${res.status} ${text.slice(0, 300)}`);
+    process.exit(1);
   }
 
-  console.error(`refresh failed - ${result.error ?? "unknown error"}; last-good snapshot preserved`);
-  process.exit(1);
+  console.log(`published ${upcoming.results.length} upcoming + ${previous.results.length} previous - ${text.slice(0, 200)}`);
 }
 
+// A non-zero exit so a failed run is red in the Actions UI rather than
+// silently green. A failed run writes nothing; the last-good snapshot stands.
 main().catch((err) => {
-  console.error("refresh threw", err);
+  console.error("ingest failed", err);
   process.exit(1);
 });

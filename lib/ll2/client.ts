@@ -27,7 +27,7 @@ export class LL2RequestError extends Error {
   }
 }
 
-interface LL2ListResponse {
+export interface LL2ListResponse {
   count: number;
   next: string | null;
   previous: string | null;

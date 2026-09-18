@@ -35,11 +35,12 @@ jobs:
 
       - run: npm ci
 
-      - name: Fetch from Launch Library 2 and publish to KV
+      - name: Fetch from Launch Library 2 and publish to the Worker
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_KV_NAMESPACE_ID: ${{ secrets.CLOUDFLARE_KV_NAMESPACE_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PUBLISH_URL: ${{ vars.PUBLISH_URL || 'https://launchcity.onezeronine.workers.dev/api/publish' }}
+          # The Worker already had this secret; no Cloudflare credentials are
+          # needed here, because the Worker stays the only writer of KV.
+          REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
           # Optional: set if an LL2 API key is ever obtained. Without it the
           # anonymous 15 requests/hour tier applies, which this run fits inside.
           LL2_API_TOKEN: ${{ secrets.LL2_API_TOKEN }}
