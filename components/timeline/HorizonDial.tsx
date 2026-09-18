@@ -266,10 +266,12 @@ export function HorizonDial({
             ? "Awaiting update"
             : "Past launch";
 
+  // Values are clamped to two lines in the panels, so the full string stays
+  // reachable on hover and on Launch Detail.
   const row = (label: string, value: ReactNode) => (
     <div>
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd title={typeof value === "string" ? value : undefined}>{value}</dd>
     </div>
   );
 

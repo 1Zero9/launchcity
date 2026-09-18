@@ -373,7 +373,16 @@
   margin-top: 0.875rem;
 }
 
+/* Both panels are a fixed box. Turning the dial swaps their contents, and
+   mission descriptions run from one line to six - without a pinned height the
+   pair grew and shrank by ~135px per launch and the whole page jumped under
+   the cursor. The height holds; the text inside clamps. */
 .panel {
+  min-height: 27rem;
+  /* Column flow so the identity panel's facts and link sit at the bottom
+     edge rather than floating under a short description. */
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, #fdfcfa 0%, var(--paper) 46%);
   border: 1px solid var(--paper-line);
   border-radius: 0.875rem;
@@ -393,6 +402,13 @@
    (founder review 2: "over-applied serif typography"). */
 .dTitle {
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* Always two lines tall, whether the name needs one or two, so a long
+     mission name does not resize the panel under the cursor. 2 x line-height. */
+  min-height: 2.12em;
   font-family: var(--lc-serif);
   font-weight: 600;
   font-size: clamp(1.5rem, 3.4vw, 2.25rem);
@@ -432,18 +448,41 @@
   line-height: 1.55;
   max-width: 46ch;
   opacity: 0.86;
+  /* Clamped so the panel keeps its height; the full text is one click away on
+     Launch Detail, and in the element's title attribute. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
+/* A fixed three-column grid, not a wrapping flex row. Provider and site names
+   range from "SpaceX" to "China Aerospace Science and Technology Corporation",
+   so a wrapping row was 55px, 113px or 171px tall depending on the launch -
+   the single biggest cause of the panel resizing as the dial turned. */
 .dFacts {
-  display: flex;
-  gap: 1.625rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
   margin: 1.625rem 0 0;
+  margin-top: auto;
   padding-top: 1.375rem;
   border-top: 1px solid var(--paper-line);
 }
 .dFacts div { display: flex; flex-direction: column; min-width: 0; }
 .dFacts dt { order: 2; font-size: 0.6875rem; color: var(--pmute); }
-.dFacts dd { order: 1; margin: 0; font-size: 0.84375rem; font-weight: 600; }
+.dFacts dd {
+  order: 1;
+  margin: 0;
+  font-size: 0.84375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  /* Exactly two lines tall, always - clamped above, reserved below. */
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 .dMore { margin: 1.375rem 0 0; font-size: 0.84375rem; }
 .dMore a { color: #2f6fa8; }
@@ -465,7 +504,17 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 .summaryCard h3 { margin: 0 0 0.4375rem; font-size: 0.9375rem; font-weight: 600; }
-.summaryCard p { margin: 0; font-size: 0.875rem; line-height: 1.55; opacity: 0.85; }
+.summaryCard p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  opacity: 0.85;
+  min-height: 4.05rem; /* three lines, so short descriptions do not shrink the card */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 .kv {
   display: grid;
