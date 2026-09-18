@@ -14,9 +14,17 @@ export interface CacheSnapshot<T> {
 
 export type CacheFreshness = "fresh" | "stale" | "empty";
 
-/** v0.1 fixed staleness threshold (roughly 2x the target ~15 min refresh
- * cadence). Not proximity-aware - see PROJECT-OS.md "explicitly deferred". */
-export const STALE_AFTER_MS = 30 * 60 * 1000;
+/**
+ * Fixed staleness threshold, roughly 2x the refresh cadence so a single
+ * missed cycle never reads as stale.
+ *
+ * Raised from 30 minutes on 2026-09-18 alongside the move to an hourly
+ * refresh. The ~15 minute target was set when the cost of refreshing was
+ * assumed to be near-zero; it is not - GitHub's scheduler will not hold a
+ * 15-minute cadence, and the founder does not need one. Not proximity-aware
+ * to launch windows - see PROJECT-OS.md "explicitly deferred".
+ */
+export const STALE_AFTER_MS = 2 * 60 * 60 * 1000;
 
 export interface CacheStore<T> {
   read(key: string): Promise<CacheSnapshot<T> | null>;

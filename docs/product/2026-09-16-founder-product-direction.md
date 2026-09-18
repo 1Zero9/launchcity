@@ -154,9 +154,24 @@ No field may be fabricated.
 
 ## Freshness and reliability
 
-- Normal freshness target: approximately 15 minutes.
-- Occasional tolerance: approximately 30 minutes.
-- Unacceptable condition: multi-hour stale data.
+> **Revised 2026-09-18 by founder decision.** The targets below were set when
+> refreshing was assumed to be effectively free. It is not: LL2 rate-limits
+> per IP, and the scheduler that can reach it reliably (GitHub Actions) is
+> explicitly best-effort and would not hold a 15-minute cadence — a `*/15`
+> schedule produced zero runs in its first hour. Asked whether the cadence
+> mattered, the founder's answer was "I don't need refreshes very often."
+>
+> **New targets:** hourly refresh; stale after 2 hours; a manual refresh
+> available on demand. Launch schedules move on the order of days, so hourly
+> carries the product promise. "Multi-hour stale data" is no longer
+> unacceptable in itself — silent or unlabelled staleness still is.
+
+- ~~Normal freshness target: approximately 15 minutes.~~ Now approximately one hour.
+- ~~Occasional tolerance: approximately 30 minutes.~~ Now 2 hours, after which the UI says so.
+- ~~Unacceptable condition: multi-hour stale data.~~ Now: staleness that is not
+  visibly labelled, or a snapshot that cannot be manually refreshed.
+- Manual refresh: run the "Refresh launch data" workflow (`workflow_dispatch`)
+  from the repository's Actions tab, or `gh workflow run refresh.yml`.
 - Exact cadence is an implementation choice.
 - Visible stale-data handling remains required.
 - The last-good snapshot must remain protected.
@@ -187,9 +202,9 @@ No field may be fabricated.
 | Secondary launches remain image-free | ACCEPTED | All launches are image-free while imagery is deferred (2026-09-18) |
 | Two-surface completion structure | ACCEPTED | Current completion boundary |
 | Search/filter/browse | DEFERRED | Complete core experience first |
-| Approximately 15-minute freshness | ACCEPTED | Founder confirmed |
-| Occasional 30-minute freshness | ACCEPTED | Founder confirmed |
-| Multi-hour staleness | REJECTED | Does not meet product need |
+| Approximately 15-minute freshness | SUPERSEDED | Unreachable on a free, reliable scheduler; founder does not need it (2026-09-18) |
+| Hourly freshness, stale after 2h, manual refresh on demand | ACCEPTED | Founder decision (2026-09-18) |
+| Unlabelled staleness | REJECTED | Multi-hour staleness is acceptable if visibly labelled and manually refreshable (2026-09-18) |
 | Zero-fabrication policy | FROZEN | Core trust requirement |
 | Paid LL2 access | PAUSED | Cost decision outstanding |
 | Platform migration | PAUSED | Insufficient need/evidence |

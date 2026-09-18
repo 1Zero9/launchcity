@@ -8,9 +8,12 @@ name: Refresh launch data
 
 on:
   schedule:
-    # Every 15 minutes - the frozen freshness target. GitHub may delay a run
-    # under load, which the ~30 minute staleness threshold already tolerates.
-    - cron: "*/15 * * * *"
+    # Hourly at :17, not */15 on the hour. Two reasons, both learned the hard
+    # way on 2026-09-18: a */15 schedule produced ZERO runs in its first hour,
+    # because GitHub's scheduler is explicitly best-effort and drops or delays
+    # short intervals under load; and load peaks at the top of the hour, so an
+    # offset minute is markedly more reliable than :00.
+    - cron: "17 * * * *"
   workflow_dispatch: # manual run, for testing and for catching up after an outage
 
 concurrency:
