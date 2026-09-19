@@ -21,6 +21,14 @@
     { "binding": "LAUNCHES_KV", "id": "c60df35f9ef14a05b386d88736f53f5e" }
   ],
 
+  // OpenNext's incremental cache (open-next.config.ts) - without this the
+  // build's prerendered HTML never reaches the deployed Worker. See that
+  // file's comment. `opennextjs-cloudflare deploy` creates this bucket and
+  // populates it automatically.
+  "r2_buckets": [
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "launchcity-incremental-cache" }
+  ],
+
   // Ingestion moved to GitHub Actions (.github/workflows/refresh.yml) on
   // 2026-09-18. LL2 rate-limits per IP and Cloudflare Workers share outbound
   // egress, so refreshes from here received sustained 429s while the same
