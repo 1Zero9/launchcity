@@ -40,7 +40,7 @@ jobs:
 
       - name: Fetch from Launch Library 2 and publish to the Worker
         env:
-          PUBLISH_URL: ${{ vars.PUBLISH_URL || 'https://launchcity.onezeronine.workers.dev/api/publish' }}
+          PUBLISH_URL: ${{ vars.PUBLISH_URL || 'https://launchcity.1zero9.com/api/publish' }}
           # The Worker already had this secret; no Cloudflare credentials are
           # needed here, because the Worker stays the only writer of KV.
           REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
